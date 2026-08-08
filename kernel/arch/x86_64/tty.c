@@ -40,4 +40,35 @@ void clear_screen() {
     }
 }
 
-void terminal_write()
+void terminal_put_char(char c) {
+    // when we want to print a char we firstly need to check if its a newline or a carriage return
+    // and only then can we combine the character and the color into a 16 bit entry and put it inot the VGA buffer
+
+    if (c == '\n') {
+        cursor_x = 0;
+        cursor_y++;
+    } else if (c == '\r') {
+        cursor_x = 0;
+    } else {
+        int index = (cursor_y * VGA_WIDTH) + cursor_x;
+
+        terminal_buffer[index] = vga_char(c, terminal_color);
+
+        cursor_x++;
+        if (cursor_x > VGA_WIDTH) {
+            cursor_x = 0;
+            cursor_y++;
+        }
+    }
+
+    if (cursor_y > VGA_HEIGHT) {
+        clear_screen();
+        cursor_y = 0;
+    }
+}
+
+void terminal_write(const char* data, size_t length) {
+    for (int i = 0; i < msg_length; i++) {
+        terminal_put_char(msg[i]);
+    } 
+}
