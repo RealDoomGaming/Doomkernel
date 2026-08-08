@@ -2,7 +2,34 @@
 Doomkernel is my own 64 bit kernel written from scratch which boots using my own bootloader: [Doomboot](https://github.com/RealDoomGaming/Doomboot)
 
 ## Roadmap
-- [ ] I dont know what to put here just yet
+### Phase 0: Foundations
+- [ ] Set up cross-compiler toolchain (`x86_64-elf-gcc`, `binutils`) -> maybe?
+- [x] Custom bootloader (Doomboot)
+- [x] Boot into 64-bit long mode kernel
+
+### Phase 1: Core Kernel
+- [x] Create a Hello World kernel
+- [ ] Set up a project / build infrastructure
+- [ ] Call global constructors
+- [ ] Terminal support (formatted printf-style printing)
+- [ ] Stack smashing protector
+- [ ] Multiboot support
+- [ ] Global Descriptor Table (GDT)
+- [ ] Memory management (physical/virtual, heap)
+- [ ] Interrupts
+- [ ] Multithreaded kernel
+- [ ] Keyboard support
+- [ ] Internal kernel debugger
+- [ ] Filesystem support (+ initialization ramdisk)
+
+### Phase 2: User-Space
+- [ ] User-space / switch to user mode
+- [ ] Program loading (dynamic linker)
+- [ ] System calls
+- [ ] OS-specific toolchain
+- [ ] Creating a C library
+- [ ] Fork and execute
+- [ ] Shell
 
 ## Build & Run
 ### Requirements:
