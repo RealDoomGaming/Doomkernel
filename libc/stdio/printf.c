@@ -67,5 +67,59 @@ int printf(const char* format, ...) {
         }
 
         // after we have done all that we can move onto the printing the formating stuff
+        
+        // we need to save where the format began tho so we can continue from there later
+        const char* format_began_at = format++
+
+        // firstly we see if the user wants to print a character 
+        if (*format == 'c') {
+            format++;
+            // in the arguments a char gets promoted to be an int so we need to convert it back to a char
+            char c = (char) va_arg(parameters, int);
+            if (!maxrem) {
+                // should be an error overflow
+                return -1;
+            }
+            // then we just print that one character we wanted to print via the formatting
+            if(!print(&c, sizeof(c))) {
+                return -1;
+            }
+            // and add one to the total written characters
+            written++;
+        } else if (*format == 's') {
+            // then else if we wanted to print a string
+            format++;
+            // we get that parameter
+            const char* str = va_arg(parameters, const char*);
+            size_t len = // we need to implement strlen(str); for this to work
+            if (maxrem < len) {
+                // error overflow
+                return -1;
+            }
+            // then try to print the string
+            if (!print(str, len)) {
+                return -1;
+            }
+            // then add the length of the string to the total amounts of characters written
+            written += len;
+        } else {
+            format = format_began_at
+            size_t len = // again strlen(format)
+            if (maxrem < len) {
+                // error overflow
+                return -1;
+            }
+            // try print again
+            if (!print(format, len)) {
+                return -1;
+            }
+            written += len;
+            format += len;
+        }
     }
+
+    // then we have to end the parameter reading thing
+    va_end(parameters);
+    // and we return the total amount of character written
+    return written;
 }
