@@ -70,7 +70,7 @@ int printf(const char* format, ...) {
         // after we have done all that we can move onto the printing the formating stuff
         
         // we need to save where the format began tho so we can continue from there later
-        const char* format_began_at = format++
+        const char* format_began_at = format++;
 
         // firstly we see if the user wants to print a character 
         if (*format == 'c') {
@@ -104,7 +104,7 @@ int printf(const char* format, ...) {
             // then add the length of the string to the total amounts of characters written
             written += len;
         } else {
-            format = format_began_at
+            format = format_began_at;
             size_t len = strlen(format);
             if (maxrem < len) {
                 // error overflow
