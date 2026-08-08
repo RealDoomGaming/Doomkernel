@@ -16,12 +16,19 @@ ST2  := $(BOOTDIR)/src/stage2.asm
 LINKER := $(BOOTDIR)/linker/linker.ld
 INCDIR := $(BOOTDIR)/src/
 
-# every c file in kernel/ is part of the kernel so adding a new one needs no change down here
-KERN_SRC := $(wildcard kernel/*.c)
-KERN_OBJ := $(patsubst kernel/%.c,build/kernel/%.o,$(KERN_SRC))
+# every c file in kernel/kernel/ is part of the kernel so adding a new one needs no change down here
+KERN_SRC := $(wildcard kernel/kernel/*.c)
+KERN_OBJ := $(patsubst kernel/kernel/%.c,build/kernel/%.o,$(KERN_SRC))
+
+# the libc is split into one directory per header (stdio/, string/, ...) so this grabs libc/*/*.c
+# it stays empty for now which is fine, the linker just gets no extra objects
+LIBC_SRC := $(wildcard libc/*/*.c)
+LIBC_OBJ := $(patsubst libc/%.c,build/libc/%.o,$(LIBC_SRC))
 
 # flags
-CDFLAGS := -ffreestanding -mno-red-zone -m64 -c
+# kernel/include holds the kernel only headers, libc/include the ones the libc exposes
+INCLUDES := -Ikernel/include -Ilibc/include
+CDFLAGS := -ffreestanding -mno-red-zone -m64 -c $(INCLUDES)
 LDFLAGS := -nmagic -T $(LINKER) --oformat binary
 
 # targets
@@ -42,13 +49,18 @@ $(OBJ2): $(ST2) | build
 	$(ASM) -f elf64 -i $(INCDIR) $(ST2) -o $(OBJ2)
 
 # compile every c file of the kernel into an elf64 object file
-build/kernel/%.o: kernel/%.c | build
+build/kernel/%.o: kernel/kernel/%.c | build
 	$(CC) $(CDFLAGS) $< -o $@
 
-# linking stage 2 and the kernel together
+# same for the libc, mkdir because the sources sit in subdirectories we mirror into build/
+build/libc/%.o: libc/%.c | build
+	@mkdir -p $(@D)
+	$(CC) $(CDFLAGS) $< -o $@
+
+# linking stage 2, the kernel and the libc together
 # stage 2 has to come first since the linker puts it at 0x8000 where stage 1 jumps to
-$(BIN2): $(OBJ2) $(KERN_OBJ) $(LINKER) | build
-	$(LD) $(LDFLAGS) $(OBJ2) $(KERN_OBJ) -o $(BIN2)
+$(BIN2): $(OBJ2) $(KERN_OBJ) $(LIBC_OBJ) $(LINKER) | build
+	$(LD) $(LDFLAGS) $(OBJ2) $(KERN_OBJ) $(LIBC_OBJ) -o $(BIN2)
 
 # combining both stages into an img file
 # first we make sure stage 2 + the kernel still fit in the sectors stage 1 loads
