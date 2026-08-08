@@ -32,7 +32,6 @@ void terminal_init() {
     clear_screen();
 }
 
-
 void clear_screen() {
     uint16_t blank = vga_char(' ', terminal_color);
 
@@ -40,3 +39,5 @@ void clear_screen() {
         terminal_buffer[i] = blank;
     }
 }
+
+void terminal_write()
