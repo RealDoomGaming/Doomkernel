@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include <kernel/tty.h>
+
 // we need to use the uint16_t* type here since for vga every character is stored as 16bit and not like normally as 8bit
 #define VGA ((volatile uint16_t*) 0xB8000)
 // width and height of the screen in characters
