@@ -6,7 +6,7 @@
 // these are all of the vga color codes which exist, we can combine them later to get the background + foreground color
 enum vga_color {
     VGA_BLACK = 0,
-    VGA_BLUE = 1
+    VGA_BLUE = 1,
     VGA_GREEN = 2, 
     VGA_CYAN = 3,
     VGA_RED = 4,
@@ -21,12 +21,12 @@ enum vga_color {
     VGA_LIGHT_MAGENTA = 13,
     VGA_LIGHT_BROWN = 14,
     VGA_WHITE = 15,
-}
+};
 
 // here we combine the background and foreground vga colors into one byte
 static inline uint8_t vga_entry(enum vga_color foreground_c, enum vga_color background_c) {
     // here we combine them and shift the background color 4 bits to the left so the foreground color and background color dont overlap
-    return fg | bg << 4
+    return foreground_c | background_c << 4;
 }
 
 // and lastly we have a function where the color and the character get combined

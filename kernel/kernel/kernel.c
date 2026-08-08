@@ -52,7 +52,7 @@ void put_char(const char c) {
     }
 }
 
-void print(const char msg[], const int msg_length, const int color) {
+void print(const char msg[], const int msg_length) {
     for (int i = 0; i < msg_length; i++) {
         put_char(msg[i]);
     } 
@@ -65,16 +65,14 @@ void kernel_main() {
     // this is our success message string
     const char success_msg[] = "Successfully loaded the kernel. \n";
     const int succ_msg_length = 33;
-    const int success_msg_color = WHITE_ON_BLACK;
 
-    print(success_msg, succ_msg_length, success_msg_color);
+    print(success_msg, succ_msg_length);
 
     // another message for testing the cursor
     const char cursor_test_msg[] = "This should be in the next line. \n";
     const int cursor_test_msg_length = 34;
-    const int cursor_test_msg_color = WHITE_ON_BLACK;
 
-    print(cursor_test_msg, cursor_test_msg_length, cursor_test_msg_color);
+    print(cursor_test_msg, cursor_test_msg_length);
 
     // while loop so the cpu doesnt run off into memory junk
     while (1) {
