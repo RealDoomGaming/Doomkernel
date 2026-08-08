@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 
 #include <kernel/tty.h>
 
@@ -6,6 +7,9 @@
 void kernel_main() {
     // first thing we do is init the terminal
     terminal_init();
+
+    // printing with our custom printf function :DD
+    printf("Successfully booted into the kernel!\n");
 
     // while loop so the cpu doesnt run off into memory junk
     while (1) {
