@@ -55,20 +55,20 @@ void terminal_put_char(char c) {
         terminal_buffer[index] = vga_char(c, terminal_color);
 
         cursor_x++;
-        if (cursor_x > VGA_WIDTH) {
+        if (cursor_x >= VGA_WIDTH) {
             cursor_x = 0;
             cursor_y++;
         }
     }
 
-    if (cursor_y > VGA_HEIGHT) {
+    if (cursor_y >= VGA_HEIGHT) {
         clear_screen();
         cursor_y = 0;
     }
 }
 
 void terminal_write(const char* data, size_t length) {
-    for (int i = 0; i < msg_length; i++) {
-        terminal_put_char(msg[i]);
+    for (size_t i = 0; i < length; i++) {
+        terminal_put_char(data[i]);
     } 
 }
