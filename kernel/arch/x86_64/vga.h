@@ -32,7 +32,7 @@ static inline uint8_t vga_entry(enum vga_color foreground_c, enum vga_color back
 // and lastly we have a function where the color and the character get combined
 static inline uint16_t vga_char(unsigned char character, uint8_t color) {
     // here we have to convert both to a 16 bit int because else we wouldnt be able to shift anything 8 bit to the left
-    return (uint16_t) character || (uint16_t) color << 8;
+    return (uint16_t) character | (uint16_t) color << 8;
 }
 
 #endif
