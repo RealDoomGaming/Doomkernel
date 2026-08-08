@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 // this is the function for printing the amount of characters between each %
 static bool print(const char* data, size_t lenght) {
@@ -91,7 +92,7 @@ int printf(const char* format, ...) {
             format++;
             // we get that parameter
             const char* str = va_arg(parameters, const char*);
-            size_t len = // we need to implement strlen(str); for this to work
+            size_t len = strlen(str); 
             if (maxrem < len) {
                 // error overflow
                 return -1;
@@ -104,7 +105,7 @@ int printf(const char* format, ...) {
             written += len;
         } else {
             format = format_began_at
-            size_t len = // again strlen(format)
+            size_t len = strlen(format);
             if (maxrem < len) {
                 // error overflow
                 return -1;
