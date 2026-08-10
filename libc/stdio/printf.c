@@ -65,6 +65,8 @@ int printf(const char* format, ...) {
             // then we just add the amount of character we went to the format and also add that to the total written character amount
             format += amount;
             written += amount;
+
+            continue;
         }
 
         // after we have done all that we can move onto the printing the formating stuff
