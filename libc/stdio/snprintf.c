@@ -22,11 +22,12 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
     va_list parameters;
     va_start(parameters, format);
 
+    size_t limit = value - 1;
     int written = 0;
 
-    while (*format != '\0' && written < value) {
+    while (*format != '\0' && (size_t)written < limit) {
 
-        size_t maxrem = value - written;
+        size_t maxrem = limit - written;
 
         if (format[0] != '%' || format[1] == '%') {
             if (format[0] == '%') {
@@ -34,11 +35,11 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
             }
 
             size_t amount = 1;
-            while (format[amount] && format[amount] != '%' && amount < value) {
+            while (format[amount] && format[amount] != '%' && amount < limit) {
                 amount++;
             }
 
-            if (maxrem < amount) {
+            if (maxrem < limit) {
                 return -1;
             }
 
@@ -96,7 +97,6 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
     }
 
     va_end(parameters);
-
     buffer[written] = '\0';
     return written;
 }
