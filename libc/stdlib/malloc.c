@@ -1,10 +1,13 @@
 #include <stdlib.h>
+#include <string.h>
 
 // we need these for specific things later, I think the names explain good engough for what we will need them
 uint32_t heap_beginning;
 uint32_t heap_end;
 uint32_t last_alloc;
 uint32_t memory_used;
+
+
 
 void* malloc(size_t size) {
     // in this function we will just allocate memory for the use by using the struct we defined in the header file to indicate where allocated memory starts
@@ -24,7 +27,7 @@ void* malloc(size_t size) {
 
         // if the alloc doesnt exist or has no size then we know that we are at the end of the allocation
         if (!alloc->size) {
-
+            goto new_alloc;
         }
 
         // elsse if the allocation has size we check if its even available
@@ -47,6 +50,33 @@ void* malloc(size_t size) {
             // and then we just return a pointer to where the actual memory starts after the struct
             return (void*)(memory_loc + sizeof(alloc_t));
         }
+
+        // and else if it is free but the space is too small for our size then we just continue to the next one
+        memory_loc += alloc->size;
+        memory_loc += sizeof(alloc_t);
     }
 
+    // here we define a label which is called if we couldnt find anything free which fits us or if we were at the end of the already allocated memory
+    new_alloc:;
+    if (last_alloc + size + sizeof(alloc_t) >= heap_end) {
+        // we are out of memory and probably need to panic here (kernel panic) but I havent implemented that yet
+        return -1;
+    }
+
+    // now we just have to make a new alloc struct with the corressponding values
+    // then we have to also change the last alloc and return the new pointer to the user
+    alloc_t *new = (alloc_t*) memory_loc;
+    new->status = 1;
+    new->size = size;
+
+    last_alloc += size + sizeof(alloc_t);
+
+    // then we also have to add the new used memory to our used memory counter
+    memory_used += size + sizeof(alloc_t);
+
+    // and we clear the memory by setting everything in it to 0
+    memset((void*)((uint32_t)new + sizeof(alloc_t)), 0, size);
+
+    // and then we just return a pointer to that free memory
+    return (void*)((uint32_t)new + sizeof(alloc_t));
 }
