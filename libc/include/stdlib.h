@@ -3,6 +3,13 @@
 
 #include <sys/cdefs.h>
 #include <stddef.h>
+#include <stdint.h>
+
+// we need this to know where the allocated memory starts later
+typedef struct {
+	uint8_t status;
+	uint32_t size;
+} alloc_t;
 
 void* malloc(size_t);
 void free (void*);
