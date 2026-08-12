@@ -6,10 +6,10 @@
 #include <stdint.h>
 
 // we need these for specific things later, I think the names explain good engough for what we will need them
-uint64_t heap_beginning = 0;;
-uint64_t heap_end = 0;
-uint64_t last_alloc = 0;
-uint64_t memory_used = 0;;
+extern uint64_t heap_beginning = 0;;
+extern uint64_t heap_end = 0;
+extern uint64_t last_alloc = 0;
+extern uint64_t memory_used = 0;;
 
 // we need this to know where the allocated memory starts later
 typedef struct {

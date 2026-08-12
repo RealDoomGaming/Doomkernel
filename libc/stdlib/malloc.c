@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+uint64_t heap_beginning = 0;;
+uint64_t heap_end = 0;
+uint64_t last_alloc = 0;
+uint64_t memory_used = 0;;
+
 void memory_init(uint64_t kernel_end) {
     // the heap bedgins where the kernel end just with a bit of a buffer between them
     heap_beginning = kernel_end + 0x1000;
