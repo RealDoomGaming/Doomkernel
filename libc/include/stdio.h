@@ -3,6 +3,7 @@
 
 // we need to basically include this everywhere in every file in the libc
 #include <sys/cdefs.h>
+#include <stddef.h>
 
 // EOF gets returned when any of the 3 functions fails so we need to define it here
 #define EOF (-1)
@@ -10,6 +11,6 @@
 int printf(const char*, ...);
 int putchar(int);
 int puts(const char*);
-int snprintf(char*, int, const char*, ...);
+int snprintf(char*, size_t, const char*, ...);
 
 #endif

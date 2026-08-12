@@ -4,13 +4,14 @@
 
 #include <kernel/tty.h>
 
+extern uint64_t kernel_end;
 
 void kernel_main() {
     // first thing we do is init the terminal
     terminal_init();
 
     // then we init the memory
-    memory_init();
+    memory_init((uint64_t)&kernel_end);
 
     // printing with our custom printf function :DD
     printf("Successfully booted into the kernel!\n");

@@ -1,6 +1,6 @@
 #include <string.h>
 
-void* memmove(void* destptr, const void* scrptr, size_t size) {
+void memmove(void* destptr, const void* srcptr, size_t size) {
     // here we have to again like in memcpy change the types of the pointers to work with them later
     unsigned char* dest = (unsigned char*) destptr;
     const unsigned char* src = (unsigned char*) srcptr;
@@ -12,7 +12,7 @@ void* memmove(void* destptr, const void* scrptr, size_t size) {
             dest[i] = src[i];
         }
     } else {
-        for (size_t i = size; i >= 0; i--) {
+        for (size_t i = size; i != 0; i--) {
             dest[i-1] = src[i-1];
         }
     }

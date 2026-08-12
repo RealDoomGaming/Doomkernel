@@ -2,16 +2,16 @@
 #include <string.h>
 
 // we need these for specific things later, I think the names explain good engough for what we will need them
-uint32_t heap_beginning;
-uint32_t heap_end;
-uint32_t last_alloc;
-uint32_t memory_used;
+uint64_t heap_beginning;
+uint64_t heap_end;
+uint64_t last_alloc;
+uint64_t memory_used;
 
-void memory_init(uint32_t kernel_end) {
+void memory_init(uint64_t kernel_end) {
     // the heap bedgins where the kernel end just with a bit of a buffer between them
     heap_beginning = kernel_end + 0x1000;
     // then the heap ends at 0x400000 which is 4MB, later we can make a function which grows this heap further until we hit the limit of the ram
-    heap_end = 0x400000
+    heap_end = 0x400000;
     // the last alloc at the start is of course the beginning of the heap
     last_alloc = heap_beginning;
     // and the memory used at the start is 0;
@@ -30,7 +30,7 @@ void* malloc(size_t size) {
     // we need to know where our heap began
     uint8_t *memory_loc = (uint8_t*) heap_beginning;
     // and then loop through our existing blocks so if we find a free one which has the required size we can give it back
-    while ((uint32_t) memory_loc < last_alloc) {
+    while ((uint64_t) memory_loc < last_alloc) {
         // we get the block where we are at right now
         alloc_t *alloc = (alloc_t*)memory_loc;
 
@@ -49,7 +49,7 @@ void* malloc(size_t size) {
         }
 
         // else if we know its free we can check if the size fits for what we got from the parameters
-        if (alloc->size >= (uint32_t) size) {
+        if (alloc->size >= (uint64_t) size) {
             // if the size fits for us we can actually use this memory location
 
             // firstly we set the current structs availability to 1 so its marked as used
@@ -69,7 +69,7 @@ void* malloc(size_t size) {
     new_alloc:;
     if (last_alloc + size + sizeof(alloc_t) >= heap_end) {
         // we are out of memory and probably need to panic here (kernel panic) but I havent implemented that yet
-        return -1;
+        return 0;
     }
 
     // now we just have to make a new alloc struct with the corressponding values
@@ -84,8 +84,8 @@ void* malloc(size_t size) {
     memory_used += size + sizeof(alloc_t);
 
     // and we clear the memory by setting everything in it to 0
-    memset((void*)((uint32_t)new + sizeof(alloc_t)), 0, size);
+    memset((void*)((uint64_t)new + sizeof(alloc_t)), 0, size);
 
     // and then we just return a pointer to that free memory
-    return (void*)((uint32_t)new + sizeof(alloc_t));
+    return (void*)((uint64_t)new + sizeof(alloc_t));
 }
