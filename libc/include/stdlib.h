@@ -5,6 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// we need these for specific things later, I think the names explain good engough for what we will need them
+uint64_t heap_beginning;
+uint64_t heap_end;
+uint64_t last_alloc;
+uint64_t memory_used;
+
 // we need this to know where the allocated memory starts later
 typedef struct {
 	uint8_t status;

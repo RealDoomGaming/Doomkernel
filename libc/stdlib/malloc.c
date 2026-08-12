@@ -1,12 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// we need these for specific things later, I think the names explain good engough for what we will need them
-uint64_t heap_beginning;
-uint64_t heap_end;
-uint64_t last_alloc;
-uint64_t memory_used;
-
 void memory_init(uint64_t kernel_end) {
     // the heap bedgins where the kernel end just with a bit of a buffer between them
     heap_beginning = kernel_end + 0x1000;
