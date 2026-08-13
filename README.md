@@ -11,7 +11,7 @@ Doomkernel is my own 64 bit kernel written from scratch which boots using my own
 - [x] Create a Hello World kernel
 - [x] Set up a project / build infrastructure
 - [ ] Call global constructors
-- [ ] Terminal support (formatted printf-style printing)
+- [x] Terminal support (formatted printf-style printing)
 - [ ] Stack smashing protector
 - [ ] Multiboot support
 - [ ] Global Descriptor Table (GDT)
