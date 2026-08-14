@@ -86,3 +86,60 @@ IRQ 12, 44
 IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
+
+;; now come the stubs we use in the macros
+isr_common_stub:
+    ;; firstly we push all gp registers to the stack preserving the cpu state
+    call save_cpu
+    ;; then we put our first argument of the c function we will call later into rdi
+    ;; and when we do this we set rdi to the current stack pointer so the c function will get that later
+    mov rdi, rsp
+    call isr_handler
+    ;; and then after all that we restore the cpu state from before
+    call restore_cpu
+
+    ;; but lastly we clean up the code by
+    ;; cleaning up the pushes from earlier 
+    add rsp, 16
+    ;; and call the special return from interrupt instruction which 
+    ;; pop rip, cs, rflags, rsp and ss off the stack
+    iretq
+
+
+save_cpu:
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push rbp
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+
+    ret
+
+restore_cpu:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbp
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+
+    ret
