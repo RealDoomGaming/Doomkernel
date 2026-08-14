@@ -105,6 +105,26 @@ isr_common_stub:
     ;; pop rip, cs, rflags, rsp and ss off the stack
     iretq
 
+irq_common_stub:
+    ;; this is basically the same as the irs label
+    call save_cpu
+
+    mov rdi, rsp
+    ;; we only call the irq handler here
+    call irq_handler
+
+    call restore_cpu
+
+    add rsp, 16
+    iretq
+
+;; and lastly we have a wrapper so the c code can call this like a normal function
+global idt_flush
+idt_flush:
+    ;; rdi hold a pointer to an IDT descriptor struct and the lidt instruction loads that into the cpus
+    ;; IDTR register telling the cpu that we now have a idt and the cpu can use it
+    lidt [rdi]
+    ret
 
 save_cpu:
     push rax
