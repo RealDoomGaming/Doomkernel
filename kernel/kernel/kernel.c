@@ -61,7 +61,7 @@ void kernel_main() {
 
     // now after we tested the exception from the cpu we have to test something which goes through
     // the whole hardware IRQ pipeline
-    
+    // I will do this tomorrow
 
 
     // then we init the memory
