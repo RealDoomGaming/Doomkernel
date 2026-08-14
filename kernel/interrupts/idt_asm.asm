@@ -23,3 +23,12 @@ isr%1:
     jmp isr_common_stub
 %endmacro
 
+;; then the last macro
+;; this macro is for pushing hardware IRQs and not cpu exceptions like before
+%macro IRQ 2
+global irq%1
+irq%1:
+    push qword 0
+    push qword %1
+    jmp irq_common_stub
+%endmacro
