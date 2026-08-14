@@ -1,9 +1,13 @@
 [bits 64]
-
 ;; this file will be for handeling the interrupts in x86_64 asm
 ;; so basically we set up that when the cpu gives and interrupt who answers that one (I think?)
 
+;; these are so the compiler knows that these functions are defined outside of this file
+extern isr_handler
+extern irq_handler
+
 ;; firstly we have to define some macros
+
 ;; this one is so when the cpu doesnt automatically push the error code onto the stack
 ;; we have to do it ourselfs
 %macro ISR_NOERR 1
@@ -14,7 +18,6 @@ isr%1:
     jmp isr_common_stub
 %endmacro
 
-;; then the next macro
 ;; this one is for if the cpu already pushed the error code onto the stack and this only pushes the interrupt number onto the stack
 %macro ISR_ERR 1
 global isr%1
@@ -23,7 +26,6 @@ isr%1:
     jmp isr_common_stub
 %endmacro
 
-;; then the last macro
 ;; this macro is for pushing hardware IRQs and not cpu exceptions like before
 %macro IRQ 2
 global irq%1
@@ -32,6 +34,43 @@ irq%1:
     push qword %1
     jmp irq_common_stub
 %endmacro
+
+%macro SAVE_CPU 0
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push rbp
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+%endmacro
+
+%macro RESTORE_CPU 0
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbp
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+%endmacro
+
 
 ;; and now we have to define which exceptions from the cpu push an error and which dont
 ;; 0-31 are the reserved exceptions from the cpu
@@ -90,13 +129,13 @@ IRQ 15, 47
 ;; now come the stubs we use in the macros
 isr_common_stub:
     ;; firstly we push all gp registers to the stack preserving the cpu state
-    call save_cpu
+    SAVE_CPU
     ;; then we put our first argument of the c function we will call later into rdi
     ;; and when we do this we set rdi to the current stack pointer so the c function will get that later
     mov rdi, rsp
     call isr_handler
     ;; and then after all that we restore the cpu state from before
-    call restore_cpu
+    RESTORE_CPU
 
     ;; but lastly we clean up the code by
     ;; cleaning up the pushes from earlier 
@@ -107,13 +146,13 @@ isr_common_stub:
 
 irq_common_stub:
     ;; this is basically the same as the irs label
-    call save_cpu
+    SAVE_CPU
 
     mov rdi, rsp
     ;; we only call the irq handler here
     call irq_handler
 
-    call restore_cpu
+    RESTORE_CPU
 
     add rsp, 16
     iretq
@@ -124,42 +163,4 @@ idt_flush:
     ;; rdi hold a pointer to an IDT descriptor struct and the lidt instruction loads that into the cpus
     ;; IDTR register telling the cpu that we now have a idt and the cpu can use it
     lidt [rdi]
-    ret
-
-save_cpu:
-    push rax
-    push rbx
-    push rcx
-    push rdx
-    push rsi
-    push rdi
-    push rbp
-    push r8
-    push r9
-    push r10
-    push r11
-    push r12
-    push r13
-    push r14
-    push r15
-
-    ret
-
-restore_cpu:
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rbp
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
-    pop rbx
-    pop rax
-
     ret
