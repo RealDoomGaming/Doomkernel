@@ -13,7 +13,7 @@ Doomkernel is my own 64 bit kernel written from scratch which boots using my own
 - [x] Terminal support (formatted printf-style printing)
 - [x] Global Descriptor Table (GDT)
 - [x] Memory management (physical/virtual, heap)
-- [ ] Interrupts
+- [ ] Interrupts (+ testing)
 - [ ] Multithreaded kernel
 - [ ] Keyboard support
 - [ ] Internal kernel debugger
