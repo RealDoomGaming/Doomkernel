@@ -5,10 +5,10 @@
 
 // we need a register for the interrupts
 typedef struct {
-    uint32_t ds;            // this is for the data segment selector
-    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // these will all be pushed by the pusha instruction
-    uint32_t int_no, err_code;     // these are the interrupt numbers and the error code
-    uint32_t eip, cs, eflags, useresp, ss; // these will all be pushed by the cpu automatically
+    uint64_t r15, r14, r13, r12, r11, r10, r9, r8;  // this is for the data segment selector
+    uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;     // these will all be pushed by the pusha instruction
+    uint64_t int_no, err_code;                      // these are the interrupt numbers and the error code
+    uint64_t rip, cs, rflags, rsp, ss;              // these will all be pushed by the cpu automatically
 } interrupt_frame_t;
 
 // this is so we accept a copy of the register instead of the actual register
