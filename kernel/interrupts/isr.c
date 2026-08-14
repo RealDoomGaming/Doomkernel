@@ -1,4 +1,5 @@
 #include <interrupts/isr.h>
+#include <interrupts/pic.h>
 #include <panic.h>
 
 // we have an array of the interrupt handlers

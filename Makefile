@@ -28,13 +28,22 @@ KERN_OBJ := $(patsubst kernel/%.c,build/%.o,$(KERN_SRC))
 ARCH_SRC := $(wildcard $(ARCHDIR)/*.c)
 ARCH_OBJ := $(patsubst kernel/%.c,build/%.o,$(ARCH_SRC))
 
-# the libc is split into one directory per header (stdio/, string/, ...) so this grabs libc/*/*.c
-# it stays empty for now which is fine, the linker just gets no extra objects
-LIBC_SRC := $(wildcard libc/*/*.c)
+# the interrupt side of the kernel (idt, isr, pic), same wildcard deal as above
+INT_SRC := $(wildcard kernel/interrupts/*.c)
+INT_OBJ := $(patsubst kernel/%.c,build/%.o,$(INT_SRC))
+
+# the asm parts of the kernel like the isr/irq stubs, assembled to elf64 so they link with the c code
+KASM_SRC := $(wildcard kernel/*/*.asm)
+KASM_OBJ := $(patsubst kernel/%.asm,build/%.o,$(KASM_SRC))
+
+# the libc is mostly split into one directory per header (stdio/, string/, ...) but files like panic.c
+# sit directly in libc/ so we grab both levels
+LIBC_SRC := $(wildcard libc/*.c) $(wildcard libc/*/*.c)
 LIBC_OBJ := $(patsubst libc/%.c,build/libc/%.o,$(LIBC_SRC))
 
-# every object we compile ourselves, used for the header dependency files further down
-OBJS := $(KERN_OBJ) $(ARCH_OBJ) $(LIBC_OBJ)
+# every c object we compile ourselves, used for the header dependency files further down
+# the asm objects stay out of here since nasm writes no .d files
+OBJS := $(KERN_OBJ) $(ARCH_OBJ) $(INT_OBJ) $(LIBC_OBJ)
 
 # flags
 # kernel/include holds the kernel only headers, libc/include the ones the libc exposes
@@ -64,10 +73,15 @@ $(OBJ2): $(ST2)
 	$(ASM) -f elf64 -i $(INCDIR) $(ST2) -o $(OBJ2)
 
 # compile every c file of the kernel into an elf64 object file
-# this covers kernel/kernel/ as well as kernel/arch/<arch>/, build/ mirrors the source tree
+# this covers kernel/kernel/, kernel/interrupts/ as well as kernel/arch/<arch>/, build/ mirrors the source tree
 build/%.o: kernel/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CDFLAGS) $< -o $@
+
+# the asm files that belong to the kernel itself, elf64 like stage 2 so the linker can merge them
+build/%.o: kernel/%.asm
+	@mkdir -p $(@D)
+	$(ASM) -f elf64 $< -o $@
 
 # same for the libc, its sources sit in subdirectories we mirror into build/ too
 build/libc/%.o: libc/%.c
@@ -76,9 +90,9 @@ build/libc/%.o: libc/%.c
 
 # linking stage 2, the kernel and the libc together
 # stage 2 has to come first since the linker puts it at 0x8000 where stage 1 jumps to
-$(BIN2): $(OBJ2) $(OBJS) $(LINKER)
+$(BIN2): $(OBJ2) $(OBJS) $(KASM_OBJ) $(LINKER)
 	@mkdir -p $(@D)
-	$(LD) $(LDFLAGS) $(OBJ2) $(OBJS) -o $(BIN2)
+	$(LD) $(LDFLAGS) $(OBJ2) $(OBJS) $(KASM_OBJ) -o $(BIN2)
 
 # combining both stages into an img file
 # first we make sure stage 2 + the kernel still fit in the sectors stage 1 loads

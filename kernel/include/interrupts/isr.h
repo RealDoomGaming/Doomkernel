@@ -12,7 +12,7 @@ typedef struct {
 } interrupt_frame_t;
 
 // this is so we accept a copy of the register instead of the actual register
-typedef void (*isr_handler_t)(interrupt_frame_t);
+typedef void (*isr_handler_t)(interrupt_frame_t *frame);
 // this function is for registerting the different handlers
 void register_interrupt_handler(uint8_t interrupt, isr_handler_t handler);
 

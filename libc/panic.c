@@ -1,4 +1,5 @@
 #include <panic.h>
+#include <stdio.h>
 
 void panic(const char* format, const char* file, const int line) {
     char *panic_msg = "****KERNEL PANIC**** \n At file: %s. \n";

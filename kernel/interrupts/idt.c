@@ -13,7 +13,7 @@ static void idt_set_item(int vector, uint64_t handler_addr, uint16_t selector, u
     // this grabs the bist 16-31 and the >> 16 shifts the address right by 16 bits
     idt[vector].offset_2 = (handler_addr >> 16) & 0xFFFF;
     // and this finally grabs bits 32-63 and we shift the address right by 32 bits
-    idt[vector].offset_3 = (handler_addr >> 32) = 0xFFFFFFFF;
+    idt[vector].offset_3 = (handler_addr >> 32) & 0xFFFFFFFF;
     // and then we do all the other stuff
     idt[vector].segment_selector = selector;
     idt[vector].ist = 0;
@@ -25,7 +25,7 @@ static void idt_set_item(int vector, uint64_t handler_addr, uint16_t selector, u
 void idt_init() {
     // we set up everything for the idtr
     idtr.limit = (sizeof(interrupter_descriptor_t)*256) - 1;
-    idtr.base = (uint64_t)&idt
+    idtr.base = (uint64_t)&idt;
 
 
     // then here we will load an empty table structure
