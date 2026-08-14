@@ -34,7 +34,8 @@ irq%1:
 %endmacro
 
 ;; and now we have to define which exceptions from the cpu push an error and which dont
-;; 0-7 use no error and only a hanfull (8, 10, 11, 12, 13, 14, 17, 30) use the ISR_ERR
+;; 0-31 are the reserved exceptions from the cpu
+;; only a handfull (8, 10, 11, 12, 13, 14, 17, 30) use the ISR_ERR
 ISR_NOERR 0
 ISR_NOERR 1
 ISR_NOERR 2
@@ -67,3 +68,21 @@ ISR_NOERR 28
 ISR_NOERR 29
 ISR_ERR   30
 ISR_NOERR 31
+
+;; the remaining 16 interrupts are hardware interrupt so 32-47
+IRQ 0,  32
+IRQ 1,  33
+IRQ 2,  34
+IRQ 3,  35
+IRQ 4,  36
+IRQ 5,  37
+IRQ 6,  38
+IRQ 7,  39
+IRQ 8,  40
+IRQ 9,  41
+IRQ 10, 42
+IRQ 11, 43
+IRQ 12, 44
+IRQ 13, 45
+IRQ 14, 46
+IRQ 15, 47
