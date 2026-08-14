@@ -48,5 +48,10 @@ void isr_handler(interrupt_frame_t *frame) {
 
 // and then we also have to do the irq handler but it is a lot lot simpler
 void irq_handler(interrupt_frame_t *frame) {
-    
+    if (interrupt_handlers[frame->int_no]) {
+        interrupt_handlers[frame->int_no](frame);
+    }
+
+    // this is just an intermediate function which will further be used later in the pic.c file
+    pic_send_eoi((uint8_t)(frame->int_no - 32));
 }
