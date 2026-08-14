@@ -12,7 +12,15 @@ typedef struct {
     uint16_t offset_2;          // second offset in the item
     uint32_t offset_3;          // third offset in the item
     uint32_t zero;              // reserved bits in the item
-} interrupter_descriptor;
+} __attribute__((packed)) interrupter_descriptor_t;
+// normally the compiler adds padding between the elements of the struct but we dont want that here
+// so we add __attribute__((packed)) 
+
+// we also need the idtr_t instruction for later usage
+typedef struct {
+    uint16_t limit;             // this is one less bytes then the IDT
+    uint64_t base;              // and this is the linear address of the IDT
+} __attribute__((packed)) idtr_t;
 
 void idt_init();
 
