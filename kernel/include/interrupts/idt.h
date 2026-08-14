@@ -14,4 +14,6 @@ typedef struct {
     uint32_t zero;              // reserved bits in the item
 } interrupter_descriptor;
 
+void idt_init();
+
 #endif
