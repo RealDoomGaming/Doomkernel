@@ -92,7 +92,7 @@ void pic_set_mask(uint8_t irq) {
     uint16_t port = irq < 8 ? PIC1_DATA : PIC2_DATA;     // so we know if its a slave or master
     uint8_t irq_line = irq < 8 ? irq : irq - 8;          // converts full irq numbers to chip irq indexes
     uint8_t value = inb(port) | (1 << irq_line);         // and this reads the current register and sets the corresponding bit with the OR operation
-    outb(value, port);                                   // and this finally writes updated masks
+    outb(port, value);                                   // and this finally writes updated masks
 }
 
 void pic_clear_mask(uint8_t irq) {
