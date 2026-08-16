@@ -3,7 +3,7 @@
 #include "vga.h"
 
 // we need to use the uint16_t* type here since for vga every character is stored as 16bit and not like normally as 8bit
-#define VGA (uint16_t*) 0xB8000
+#define VGA ((uint16_t*) 0xB8000)
 // width and height of the screen in characters
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
