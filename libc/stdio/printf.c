@@ -105,6 +105,10 @@ int printf(const char* format, ...) {
             }
             // then add the length of the string to the total amounts of characters written
             written += len;
+        } else if (*format == 'x') {
+
+        } else if (*format == 'd') {
+
         } else {
             format = format_began_at;
             size_t len = strlen(format);
