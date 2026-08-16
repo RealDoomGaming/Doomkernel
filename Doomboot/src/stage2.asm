@@ -33,7 +33,7 @@ detect_memory:
 
 .mmap_loop:
     mov edx, 0x534D4150             ;; then we move this specific signature into edx, the signature stands for SMAP which is required by this bios call
-    mov eax, 0xA820                 ;; then we move 0xA820 into eax which tells the bios to call the memory map detection function
+    mov eax, 0xE820                 ;; then we move 0xE820 into eax which tells the bios to call the memory map detection function
     mov ecx, MMAP_ENTRY_SIZE        ;; and since we want to request up to 24 bytes we also move the entry size into ecx
     int 0x15                        ;; then we trigger the bios interrupt
     jc .mmap_done                   ;; and see if the carry flag was set -> if it was then the call failed or was unsupported ()
