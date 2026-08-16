@@ -37,7 +37,7 @@ static int print_hex(uint64_t hex) {
 
     // now we have the loop where we walk from the highest nibble (half a byte so 4 bit) down to the lowest
     // and we skip all leading zeros
-    for (int i = 60; i > 0; i -= 4) {
+    for (int i = 60; i >= 0; i -= 4) {
         // this would move the nibble we currently care about to the left by i so we can grab it cleanly later
         // and then we AND it with 0xF so that only the position which both have 1 stay 1
         uint8_t nibble = (hex >> i) & 0xF;
