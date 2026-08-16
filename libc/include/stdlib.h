@@ -34,6 +34,6 @@ void free (void*);
 void* calloc(size_t , size_t);
 void* realloc(void*, size_t);
 
-void memory_init(uint64_t);
+void memory_init(uint64_t, mmap_entry_t*, uint16_t);
 
 #endif

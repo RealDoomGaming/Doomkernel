@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <panic.h>
@@ -73,7 +74,7 @@ static int print_decimal(int64_t dec) {
     // then we have to handle if the dec is negative or not
     if (dec < 0) {
         negative = true;
-        dec = -dec          // we invert the number here so we make it positive for digit extraction later
+        dec = -dec;          // we invert the number here so we make it positive for digit extraction later
     }
 
     // then we start extracting the digits but from right to left since
@@ -83,9 +84,9 @@ static int print_decimal(int64_t dec) {
     }
     while (dec > 0) {
         // the modulo isolates the last digit and combing that with '0' converts it to an ASCII
-        temp[temp_pos++] = '0' + (value % 10);
+        temp[temp_pos++] = '0' + (dec % 10);
         // and this drops the right most digit because we already added it to temp
-        value /= 10;
+        dec /= 10;
     }
 
     // so now after we got the digits we have them in the wrong order
@@ -208,12 +209,12 @@ int printf(const char* format, ...) {
         } else if (*format == 'd') {
             // then if we want to print a decimal number
             format++;
-            const int64_t dec = va_arg(parameters, cont int64_t);
+            const int64_t dec = va_arg(parameters, const int64_t);
             int len = print_decimal(dec);
             if (len < 0) {
                 return -1;
             }
-            written += len
+            written += len;
         } else {
             format = format_began_at;
             size_t len = strlen(format);
