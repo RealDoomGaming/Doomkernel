@@ -61,6 +61,53 @@ static int print_hex(uint64_t hex) {
     return pos;
 }
 
+// this function is used to print decimal numbers
+static int print_decimal(int64_t dec) {
+    char buffer[21];    // a buffer for printing the sign + up to 19 numbers and then the null terminator
+    char temp[20];      // this will hold digits temporary as we get them in reversed order
+    int temp_pos = 0;   
+    int pos = 0;
+    bool negative = false;
+
+    // then we have to handle if the dec is negative or not
+    if (dec < 0) {
+        negative = true;
+        dec = -dec          // we invert the number here so we make it positive for digit extraction later
+    }
+
+    // then we start extracting the digits but from right to left since
+    // math operations start extrating them from the rightmost digit
+    if (dec == 0) {
+        temp[temp_pos++] = '0';
+    }
+    while (dec > 0) {
+        // the modulo isolates the last digit and combing that with '0' converts it to an ASCII
+        temp[temp_pos++] = '0' + (value % 10);
+        // and this drops the right most digit because we already added it to temp
+        value /= 10;
+    }
+
+    // so now after we got the digits we have them in the wrong order
+    // so we need to reverse them
+    // and also if the number is negative we have to set the first thing to a minus
+    if (negative) {
+        buffer[pos++] = '-';
+    }
+
+    while (temp_pos > 0) {
+        buffer[pos++] = temp[temp_pos--];
+    }
+    // and of course we have to set the null terminator too
+    buffer[pos] = '\0';
+
+    // then we try to print it
+    if (!print(buffer, pos)) {
+        return -1;
+    }
+
+    return pos;
+}
+
 // we need our printf function here since this is the printf file
 int printf(const char* format, ...) {
     // in this function we need to firstly get a list of all arguments passed
@@ -161,6 +208,11 @@ int printf(const char* format, ...) {
             // then if we want to print a decimal number
             format++;
             const int64_t dec = va_arg(parameters, cont int64_t);
+            int len = print_decimal(dec);
+            if (len < 0) {
+                return -1;
+            }
+            written += len
         } else {
             format = format_began_at;
             size_t len = strlen(format);
