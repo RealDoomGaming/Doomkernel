@@ -41,6 +41,7 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     printf("[test] we are still alive (no kernel panic)\n");
 
     // then we init the memory
+    printf("[memory] BIOS reported %d usable memory map entries\n", mmap_count);
     // before giving the mmap_addrs to the function we have to convert it
     mmap_entry_t *mmap = (mmap_entry_t *)mmap_addr;
     memory_init((uint64_t)&kernel_end, mmap, mmap_count);

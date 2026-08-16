@@ -12,8 +12,8 @@ void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
     heap_beginning = kernel_end + 0x1000;   // the beginning of the heap is the kernel end with a bit of a buffer between them
 
     // debugging messages
-    printf("[memory] kernel_end at %x\n", kernel_end);
-    printf("[memory] heap_beginning padded to %x\n", heap_beginning);
+    printf("[memory] kernel end at %x\n", kernel_end);
+    printf("[memory] heap beginning padded to %x\n", heap_beginning);
 
     // this will be used to track the biggest continuous usable chunck of memory
     uint64_t best_base = 0;
@@ -48,7 +48,7 @@ void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
         uint64_t new_length = entry_end - entry_start;
 
         // debugging message
-        printf("[memory] found usable region, length %x\n", new_length);
+        printf("[memory] found usable region with length %x\n", new_length);
 
         // then we see if this is the biggest entry yet
         if (new_length > best_len) {
@@ -69,8 +69,7 @@ void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
     memory_used = 0;
 
     // some messages for error printing
-    printf("[memory] heap set: beginning=%x end=%x\n", heap_beginning, heap_end);
-    printf("[memory] BIOS reported %d usable memory map entries\n", mmap_count);
+    printf("[memory] heap set to beginning=%x and end=%x\n", heap_beginning, heap_end);
 }
 
 void* malloc(size_t size) {
