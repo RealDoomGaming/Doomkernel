@@ -4,7 +4,7 @@
 ;; for later we need to use E820 to detect memory in real mode (16 bit)
 ;; and for E820 we should define some stuff at the top here
 ;; like the location where the memory map entries will be saved
-MMAP_BUFFER equ 0x8000
+MMAP_BUFFER equ 0x20000
 ;; and the size of each entry (64-bit base address + 64 bit length + 32 bit type + 32 bit ACPI attributes)
 MMAP_ENTRY_SIZE equ 24
 
