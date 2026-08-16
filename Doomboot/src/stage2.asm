@@ -1,8 +1,18 @@
 ;; [org 0x8000] when using a linker we dont need this anymore since the linker itself manages where this file starts 
 [bits 16]
 
+;; for later we need to use E820 to detect memory in real mode (16 bit)
+;; and for E820 we should define some stuff at the top here
+;; like the location where the memory map entries will be saved
+MMAP_BUFFER equ 0x8000
+;; and the size of each entry (64-bit base address + 64 bit length + 32 bit type + 32 bit ACPI attributes)
+MMAP_ENTRY_SIZE equ 24
+
 ;; we start here with the second stage of our bootloader
 start2:
+    ;; before doing anything else we have to detect and save the memory map we get from the A820 since 0x15 only works in real mode (16 bit mode)
+    call detect_memory
+
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
     ;; we firstly load our gdt descriptor, we only need to do this once!!
@@ -14,7 +24,42 @@ start2:
 
     jmp CODE32:protected_mode_entry     ;; here we performe a far jump and force the cpu to throw away whatever it wanted to do and continue in protected mode
 
+detect_memory:
+    ;; we have a detect memory function which saves each memory entry until the carry flag was set when calling int 0x15
+    pusha           ;; firstly we push everything onto the stack
+    xor ebx, ebx    ;; then we zero out ebx
+    xor bp, bp      ;; we also zero out the entry counter
+    mov edi, MMAP_BUFFER  ;; then we move the buffer where the memory map is supposed to go into edi
 
+.mmap_loop:
+    mov edx, 0x534D4150             ;; then we move this specific signature into edx, the signature stands for SMAP which is required by this bios call
+    mov eax, 0xA820                 ;; then we move 0xA820 into eax which tells the bios to call the memory map detection function
+    mov ecx, MMAP_ENTRY_SIZE        ;; and since we want to request up to 24 bytes we also move the entry size into ecx
+    int 0x15                        ;; then we trigger the bios interrupt
+    jc .mmap_done                   ;; and see if the carry flag was set -> if it was then the call failed or was unsupported ()
+
+    jcxz .mmap_skip_entry           ;; if ecx is 0 then the bios returned 0 bytes so we can skip this entry
+    cmp ecx, 20                     ;; then we check if the bios returned 20 bytes
+    jmp .mmap_good_entry            ;; and if it returned 20 bytes then the entry was without the ACPI 3.0 extended attributes and its valid and good :D
+    ;; else
+    test byte [edi + 20], 1         ;; if ACPI 3.0 extended attributes exist we can test Bit 0 which is the "Ignore this entry" flag
+    je .mmap_skip_entry             ;; and if Bit 0 is 0 then we HAVE to skip this entry
+
+.mmap_good_entry:
+    ;; if we have a valid entry we can just increase the counter and advance the pointer in memory by 24 bytes to go to the next entry
+    inc bp
+    add edi, MMAP_ENTRY_SIZE
+
+.mmap_skip_entry:
+    ;; firstly we have to check if ebx was reset to 0
+    test ebx, ebx
+    ;; if ebx is not 0 it means the last entry wasnt reached so we loop
+    jnz .mmap_loop
+
+.mmap_done:
+    mov [mmap_entry_count], bp      ;; this stores the amount of entries which lies in bp in our own count
+    popa                            ;; then we restore the registers we pushed from the stack
+    ret                             ;; and simply return
 
 ;; here we will define our gdt, in our gdt we want to five descriptors
 ;; 1. null descriptor -> this one is required by the cpu I think, but either way we need it
@@ -122,6 +167,7 @@ DATA32 equ gdt_data_32bit-gdt_start     ;; same as before
 CODE64 equ gdt_code_64bit-gdt_start     ;; yeah I think you get it
 DATA64 equ gdt_data_64bit-gdt_start     ;; yep
 
+mmap_entry_count: dw 0      ;; this is for holding the final count of all mmap entries
 
 [bits 32] 
 
