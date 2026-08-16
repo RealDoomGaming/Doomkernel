@@ -50,7 +50,7 @@ OBJS := $(KERN_OBJ) $(ARCH_OBJ) $(INT_OBJ) $(LIBC_OBJ)
 # the arch directory is on the include path too so kernel code can pull in vga.h and friends
 INCLUDES := -Ikernel/include -Ilibc/include -I$(ARCHDIR)
 # -MMD -MP writes a .d file next to every .o so touching a header rebuilds what includes it
-CDFLAGS := -ffreestanding -mno-red-zone -m64 -Wall -Wextra -MMD -MP -c $(INCLUDES)
+CDFLAGS := -ffreestanding -mno-red-zone -mgeneral-regs-only -m64 -Wall -Wextra -MMD -MP -c $(INCLUDES)
 LDFLAGS := -nmagic -T $(LINKER) --oformat binary
 
 # targets
