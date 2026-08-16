@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 uint64_t heap_beginning = 0;;
 uint64_t heap_end = 0;
@@ -47,7 +48,7 @@ void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
         uint64_t new_length = entry_end - entry_start;
 
         // debugging message
-        printf("[memory] found usable region, length %x\n", len);
+        printf("[memory] found usable region, length %x\n", new_length);
 
         // then we see if this is the biggest entry yet
         if (new_length > best_len) {

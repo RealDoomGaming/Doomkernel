@@ -41,7 +41,9 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     printf("[test] we are still alive (no kernel panic)\n");
 
     // then we init the memory
-    memory_init((uint64_t)&kernel_end, mmap_addr, mmap_count);
+    // before giving the mmap_addrs to the function we have to convert it
+    mmap_entry_t *mmap = (mmap_entry_t *)mmap_addr;
+    memory_init((uint64_t)&kernel_end, mmap, mmap_count);
     // also just a msg
     printf("[memory] heap beginning and end was set\n");
 
