@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <panic.h>
 
 // this is the function for printing the amount of characters between each %
 static bool print(const char* data, size_t lenght) {
@@ -143,7 +144,7 @@ int printf(const char* format, ...) {
             // if the amount we need to print is bigger an the max int we will need to give back an overflow error
             if (maxrem < amount) {
                 // what I still need to do is have a error variable somewhere so I can set that to the error
-                return -1;
+                PANIC("Overflow Error");
             }
 
             // then we need to print or try to print the amount of characters we have now
@@ -170,7 +171,7 @@ int printf(const char* format, ...) {
             char c = (char) va_arg(parameters, int);
             if (!maxrem) {
                 // should be an error overflow
-                return -1;
+                PANIC("Overflow Error");
             }
             // then we just print that one character we wanted to print via the formatting
             if(!print(&c, sizeof(c))) {
