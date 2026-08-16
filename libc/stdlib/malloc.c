@@ -6,15 +6,9 @@ uint64_t heap_end = 0;
 uint64_t last_alloc = 0;
 uint64_t memory_used = 0;;
 
+
 void memory_init(uint64_t kernel_end) {
-    // the heap bedgins where the kernel end just with a bit of a buffer between them
-    heap_beginning = kernel_end + 0x1000;
-    // then the heap ends at 0x400000 which is 4MB, later we can make a function which grows this heap further until we hit the limit of the ram
-    heap_end = 0x400000;
-    // the last alloc at the start is of course the beginning of the heap
-    last_alloc = heap_beginning;
-    // and the memory used at the start is 0;
-    memory_used = 0;
+    
 }
 
 void* malloc(size_t size) {
