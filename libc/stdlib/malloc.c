@@ -7,8 +7,58 @@ uint64_t last_alloc = 0;
 uint64_t memory_used = 0;;
 
 
-void memory_init(uint64_t kernel_end) {
-    
+void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
+    heap_beginning = kernel_end + 0x1000;   // the beginning of the heap is the kernel end with a bit of a buffer between them
+
+    // this will be used to track the biggest continuous usable chunck of memory
+    uint64_t best_base = 0;
+    uint64_t best_len = 0;
+
+    // this is the for loop for actually finding the biggest continuous usable chunck of memory
+    for (uint16_t i = 0; i < mmap_count; i++) {
+        // getting the current entry
+        mmap_entry_t *entry = &mmap[i];
+
+        // if we cannot use this current entry we just go to the next entry
+        // so this basically filters out reserved or unusable regions
+        if (entry->type != MMAP_USABLE) {
+            continue;
+        }
+
+        // here we get where the entry starts and where it ends
+        uint64_t entry_start = entry->base_addr;
+        uint64_t entry_end = entry_start + entry->length;
+
+        // then we check if the entry is below our defined heap beginning so this prevents the heap from placing itself in low ram
+        if (entry_end <= heap_beginning) {
+            continue;
+        }
+
+        // then if an entry starts before our heap beginning but ends after our heap beginning we just shift its starting addr
+        if (entry_start < heap_beginning) {
+            entry_start = heap_beginning;
+        }
+
+        // and because of that we have to calculate the length new here even if the entry doesnt start below our defined heap beginning
+        uint64_t new_length = entry_end - entry_start;
+
+        // then we see if this is the biggest entry yet
+        if (new_length > best_len) {
+            best_len = new_length;
+            best_base = entry_start
+        }
+    }
+
+    // and then finally after searching for the biggest entry we have a fallback
+    if (best_len = 0) {
+        heap_end = heap_beginning + 0x100000;
+    } else {
+        heap_beginning = best_base;
+        heap_end = best_base + best_len;
+    }
+
+    last_alloc = heap_beginning;
+    memory_used = 0;
 }
 
 void* malloc(size_t size) {
