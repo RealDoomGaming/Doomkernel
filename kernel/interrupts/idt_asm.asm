@@ -31,7 +31,7 @@ isr%1:
 global irq%1
 irq%1:
     push qword 0
-    push qword %1
+    push qword %2
     jmp irq_common_stub
 %endmacro
 
