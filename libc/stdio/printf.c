@@ -19,6 +19,48 @@ static bool print(const char* data, size_t lenght) {
     return true;
 }
 
+// this is the function responsible for printing a hex number
+// and it returns the amount of characters written or if it fails it returns -1
+static int print_hex(uint64_t hex) {
+    char buffer[19];        // we have a buffer for 0x and up to 16 numbers and also null
+    const char* digits = "0123456789ABCDEF";        // we have all digits which could be in a hex number here
+
+    // this will always be the same since we want to print a hex number
+    buffer[0] = '0';
+    buffer[1] = 'x';
+
+    // started will be explained later and pos should be self explanetory
+    int started = 0;
+    int pos = 2;
+
+    // now we have the loop where we walk from the highest nibble (half a byte so 4 bit) down to the lowest
+    // and we skip all leading zeros
+    for (int i = 60; i > 0; i -= 4) {
+        // this would move the nibble we currently care about to the left by i so we can grab it cleanly later
+        // and then we AND it with 0xF so that only the position which both have 1 stay 1
+        uint8_t nibble = (hex >> i) & 0xF;
+
+        // we only print something if the nibble is not zero so actually worth printing, or 
+        // if we already printed a real digit so every nibble matters from now on, or
+        // if we have the last digit so even if everything was 0 we would still get 0x0
+        if (nibble != 0 || started || i == 0) {
+            buffer[pos++] = digits[nibble];
+            started = 1;
+        }
+    }
+
+    // then we set the null terminator
+    buffer[pos] = '\0';
+
+    // then we try to print the hex number
+    if (!print(buffer, pos)) {
+        return -1;
+    }
+
+    // and return
+    return pos;
+}
+
 // we need our printf function here since this is the printf file
 int printf(const char* format, ...) {
     // in this function we need to firstly get a list of all arguments passed
@@ -106,9 +148,19 @@ int printf(const char* format, ...) {
             // then add the length of the string to the total amounts of characters written
             written += len;
         } else if (*format == 'x') {
-
+            // then if we want to print a hex number
+            // this is usefull for adresses and sizes (especially for memory)
+            format++;
+            const uint64_t hex = va_arg(parameters, const uint64_t);
+            int len = print_hex(hex);
+            if (len < 0) {
+                return -1;
+            }
+            written += len;
         } else if (*format == 'd') {
-
+            // then if we want to print a decimal number
+            format++;
+            const int64_t dec = va_arg(parameters, cont int64_t);
         } else {
             format = format_began_at;
             size_t len = strlen(format);
