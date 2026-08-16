@@ -97,7 +97,8 @@ static int print_decimal(int64_t dec) {
     }
 
     while (temp_pos > 0) {
-        buffer[pos++] = temp[temp_pos--];
+        // --temp_pos decrements before indexing
+        buffer[pos++] = temp[--temp_pos];
     }
     // and of course we have to set the null terminator too
     buffer[pos] = '\0';
