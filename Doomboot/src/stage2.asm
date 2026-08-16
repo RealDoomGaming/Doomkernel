@@ -3,10 +3,10 @@
 
 ;; for later we need to use E820 to detect memory in real mode (16 bit)
 ;; and for E820 we should define some stuff at the top here
-;; like the location where the memory map entries will be saved
-MMAP_BUFFER equ 0x20000
-;; and the size of each entry (64-bit base address + 64 bit length + 32 bit type + 32 bit ACPI attributes)
+;; like the size of each entry (64-bit base address + 64 bit length + 32 bit type + 32 bit ACPI attributes)
 MMAP_ENTRY_SIZE equ 24
+;; and the address where the mmap buffer is supposed to go
+MMAP_BUFFER equ 0x20000
 
 ;; we start here with the second stage of our bootloader
 start2:
@@ -29,7 +29,11 @@ detect_memory:
     pusha           ;; firstly we push everything onto the stack
     xor ebx, ebx    ;; then we zero out ebx
     xor bp, bp      ;; we also zero out the entry counter
-    mov edi, MMAP_BUFFER  ;; then we move the buffer where the memory map is supposed to go into edi
+    
+    ;; we define where the mmap buffer is supposed to load at so we have ax 2000 and edi is 0 so we get 2000:0000 -> 20000
+    mov ax, 0x2000
+    mov es, ax
+    xor edi, edi
 
 .mmap_loop:
     mov edx, 0x534D4150             ;; then we move this specific signature into edx, the signature stands for SMAP which is required by this bios call
