@@ -40,7 +40,7 @@ detect_memory:
 
     jcxz .mmap_skip_entry           ;; if ecx is 0 then the bios returned 0 bytes so we can skip this entry
     cmp ecx, 20                     ;; then we check if the bios returned 20 bytes
-    jmp .mmap_good_entry            ;; and if it returned 20 bytes then the entry was without the ACPI 3.0 extended attributes and its valid and good :D
+    jbe .mmap_good_entry            ;; and if it returned 20 bytes then the entry was without the ACPI 3.0 extended attributes and its valid and good :D
     ;; else
     test byte [edi + 20], 1         ;; if ACPI 3.0 extended attributes exist we can test Bit 0 which is the "Ignore this entry" flag
     je .mmap_skip_entry             ;; and if Bit 0 is 0 then we HAVE to skip this entry
