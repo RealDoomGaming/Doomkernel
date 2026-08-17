@@ -44,6 +44,13 @@ void* calloc(size_t amount, size_t size) {
 
         if (alloc->size >= (uint64_t) total_size) {
 
+            if (alloc->size - total_size > sizeof(alloc_t)) {
+                alloc_t *remainder = (alloc_t*)((uint8_t*)alloc + sizeof(alloc_t) + total_size);
+                remainder->status = 0;
+                remainder->size = alloc->size - total_size - sizeof(alloc_t);
+                alloc->size = total_size;
+            }
+
             alloc->status = 1;
             memory_used += total_size + sizeof(alloc_t);
             memset((void*)((uint64_t)alloc + sizeof(alloc_t)), 0, total_size);
