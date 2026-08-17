@@ -1,6 +1,11 @@
 ;; [org 0x8000] when using a linker we dont need this anymore since the linker itself manages where this file starts 
 [bits 16]
 
+;; these are the start and end of the bss section in the bootloader
+;; we need them here so we can zero them out later
+extern bss_start
+extern bss_end
+
 ;; for later we need to use E820 to detect memory in real mode (16 bit)
 ;; and for E820 we should define some stuff at the top here
 ;; like the size of each entry (64-bit base address + 64 bit length + 32 bit type + 32 bit ACPI attributes)
@@ -417,6 +422,17 @@ long_mode_entry:
 
     ;; then we need to set up a functional stack pointer
     mov rsp, stack_top
+
+    ;; before we call the kernel we need to zero out whatever junk is leftover from the ram in the bss section 
+    ;; firstly we move the start and end into the rdi and rcs registers
+    mov rdi, bss_start
+    mov rcx, bss_end
+    ;; then we subtract them getting a byte count
+    sub rcx, rdi
+    ;; and then we can zero eax
+    xor eax, eax
+    ;; and then we fill the amount of bytes in the rcx register starting from rdi with eax
+    rep stosb
 
     ;; before we call the kernel we have to load the memory map and the count of entries as arguments for the kernel
     mov rdi, MMAP_BUFFER
