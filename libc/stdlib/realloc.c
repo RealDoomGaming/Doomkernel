@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 void* realloc(void* ptr, size_t size) {
     // realloc will make a new memory chunck, and shift everything of the old data over
@@ -14,6 +15,13 @@ void* realloc(void* ptr, size_t size) {
         free(ptr);
         return 0;
     }
+
+    // then we do the same check as in malloc, we need to check if our newly aligned size is bigger then the integer limit
+    if (size > INT_MAX - (ALLOC_ALIGN - 1)) {
+        return 0;
+    }
+    // and if it isnt we can safely align it
+    size = ALIGN_UP(size);
 
     // we need to find the alloc_t struct which is infront of the pointer
     alloc_t *alloc_cur = (alloc_t *)((uint8_t*)ptr - sizeof(alloc_t));
