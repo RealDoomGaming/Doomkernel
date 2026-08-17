@@ -18,7 +18,11 @@ void* calloc(size_t amount, size_t size) {
         return 0; 
     }
 
-    uint64_t total_size = amount * size;
+    if (amount * size > MAX_SIZE - (ALLOC_ALIGN - 1)) {
+        return 0;
+    }
+
+    uint64_t total_size = ALIGN_UP(amount * size);
 
     uint8_t *memory_loc = (uint8_t*) heap_beginning;
 

@@ -13,7 +13,7 @@ uint64_t memory_used = 0;;
 
 
 void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
-    heap_beginning = kernel_end + 0x1000;   // the beginning of the heap is the kernel end with a bit of a buffer between them
+    heap_beginning = ALIGN_UP(kernel_end + 0x1000);   // the beginning of the heap is the kernel end with a bit of a buffer between them and we also need to Align the start of the heap
 
     // debugging messages
     printf("[memory] kernel end at %x\n", kernel_end);
@@ -65,7 +65,8 @@ void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
     if (best_len == 0) {
         heap_end = heap_beginning + 0x100000;
     } else {
-        heap_beginning = best_base;
+        // aligning the heap beginning here too
+        heap_beginning = ALIGN_UP(best_base);
         heap_end = best_base + best_len;
     }
 
