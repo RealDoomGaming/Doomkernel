@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 
+// this is the maximum that we can map because of the entries we made in the bootloader
+#define MAPPED_LIMIT 0x40000000UL
+
 uint64_t heap_beginning = 0;;
 uint64_t heap_end = 0;
 uint64_t last_alloc = 0;
@@ -63,6 +66,10 @@ void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
     } else {
         heap_beginning = best_base;
         heap_end = best_base + best_len;
+    }
+
+    if (heap_end > MAPPED_LIMIT) {
+        heap_end = MAPPED_LIMIT;
     }
 
     last_alloc = heap_beginning;

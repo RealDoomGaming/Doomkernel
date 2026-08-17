@@ -259,17 +259,18 @@ set_up_paging:
     mov edi, PDPT_ADDR  ;; we move edi to the starting address of the pdpt
     mov DWORD [edi], PDT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
 
-    mov edi, PDT_ADDR   ;; we move edi to the starting address of pdt
-    mov DWORD [edi], PT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
+    ;; we dont need this anymore because our PDT becomes the last thing itself instead of the PT
+    ;; mov edi, PDT_ADDR   ;; we move edi to the starting address of pdt
+    ;; mov DWORD [edi], PT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
 
     ;; and after we have set up all that we can fill in the pages
-    mov edi, PT_ADDR        ;; mov edi back to the starting address
-    mov ebx, PT_PRESENT | PT_READABLE   ;; this will be value 3 and the future starting value for each entry
+    mov edi, PDT_ADDR        ;; mov edi back to the starting address
+    mov ebx, PT_PRESENT | PT_READABLE | PT_HUGE  ;; this will be value 3 and the future starting value for each entry
     mov ecx, ENTRIES_PER_PT ;; 1 full page table addresses 2 MB and ecx is the loop counter later
 
 .set_entry:
     mov DWORD [edi], ebx    ;; we move the value of ebx into the value at the address of edi (the starting address of the entry)
-    add ebx, PAGE_SIZE      ;; then we add 0x1000 to ebx so the next time it will point to the next page (this doesnt change our PT_PRESNT | PT_READABLE from before)
+    add ebx, HUGE_PAGE_SIZE      ;; then we add 0x200000 to ebx so the next time it will point to the next page (this doesnt change our PT_PRESNT | PT_READABLE | PT_HUGE from before)
     add edi, SIZEOF_PT_ENTRY ;; here we go to the next page table
     loop .set_entry         ;; then we go to the next entry (loop decrements ecx until is 0 then it wont go back so set_entry)
 

@@ -32,3 +32,7 @@ EFER_LM_ENABLE equ 1 << 8   ;; and this will be used for setting the 8th bit (lo
 ;; the next two are used for enabeling paging and enabeling protected mode (if its not already enabled)
 CR0_PM_ENABLE equ 1 << 0
 CR0_PG_ENABLE equ 1 << 31
+
+;; this should make a PDT entry 2 MB so later we can actually map a lot more
+PT_HUGE equ 1 << 7          
+HUGE_PAGE_SIZE equ 0x200000
