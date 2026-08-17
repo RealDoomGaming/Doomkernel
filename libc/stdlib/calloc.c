@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 void* calloc(size_t amount, size_t size) {
     // calloc is simmilar to malloc only that the size we need to allocate is amount * size instead of only the size
@@ -18,7 +19,7 @@ void* calloc(size_t amount, size_t size) {
         return 0; 
     }
 
-    if (amount * size > MAX_SIZE - (ALLOC_ALIGN - 1)) {
+    if (amount * size > INT_MAX - (ALLOC_ALIGN - 1)) {
         return 0;
     }
 

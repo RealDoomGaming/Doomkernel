@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdint.h>
+#include <limits.h>
 
 // this is the maximum that we can map because of the entries we made in the bootloader
 #define MAPPED_LIMIT 0x40000000UL
@@ -95,7 +95,7 @@ void* malloc(size_t size) {
     }
 
     // before we try to align anything we need to if adding (ALLOC_ALIGN - 1) to size will exceed the max amount an int can hold
-    if (size > MAX_SIZE - (ALLOC_ALIGN - 1)) {
+    if (size > INT_MAX - (ALLOC_ALIGN - 1)) {
         return 0;
     }
     // if we pass that check we can align our size without any risks
