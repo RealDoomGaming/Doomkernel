@@ -39,7 +39,7 @@ typedef struct {
 } alloc_t;
 
 // after our header struct we have to check at compile time if the struct is even a multiple of our ALLOC_ALIGN so it fits with the memory chuncks we got
-_Static_asser(sizeof(alloc_t) % ALLOC_ALIGN == 0, "alloc_t must be a multiple of ALLOC_ALIGN");
+_Static_assert(sizeof(alloc_t) % ALLOC_ALIGN == 0, "alloc_t must be a multiple of ALLOC_ALIGN");
 
 void* malloc(size_t);
 void free (void*);
