@@ -130,10 +130,9 @@ void* malloc(size_t size) {
 
             // firstly we set the current structs availability to 1 so its marked as used
             alloc->status = 1;
-            // we could cut it down if we know its too big and make a new struct for later use but I am too lazy to do that right now :)
             memory_used += alloc->size + sizeof(alloc_t);
             // clear the memory when we reuse an old memory block
-            memset((void*)((uint64_t)alloc + sizeof(alloc_t)), 0, size);
+            memset((void*)((uint64_t)alloc + sizeof(alloc_t)), 0, alloc->size);
             // and then we just return a pointer to where the actual memory starts after the struct
             return (void*)(memory_loc + sizeof(alloc_t));
         }
