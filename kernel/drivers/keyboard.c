@@ -31,5 +31,8 @@ void keyboard_init() {
     kbd_head = 0;
     kbd_tail = 0;
 
-    register_interrupt_handler(33, keyboard_handler)
+    // we register the keyboard handler
+    register_interrupt_handler(33, keyboard_handler);
+    // then we set the keyboard enabled to 1 so true
+    __kbd_enabled = 1;
 }
