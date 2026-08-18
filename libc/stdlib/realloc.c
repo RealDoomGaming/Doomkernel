@@ -40,6 +40,9 @@ void* realloc(void* ptr, size_t size) {
 
             // then we set the size of the memory chunck which we wanted to reduce to the reduced size
             alloc_cur->size = size;
+
+            // the remainder was split off so its free now
+            memory_used -= remainder->size + sizeof(alloc_t);
         }
 
 

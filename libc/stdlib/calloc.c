@@ -57,7 +57,7 @@ void* calloc(size_t amount, size_t size) {
             }
 
             alloc->status = 1;
-            memory_used += total_size + sizeof(alloc_t);
+            memory_used += alloc->size + sizeof(alloc_t);
             memset((void*)((uint64_t)alloc + sizeof(alloc_t)), 0, total_size);
 
             return (void*)(memory_loc + sizeof(alloc_t));
