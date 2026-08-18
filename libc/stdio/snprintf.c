@@ -65,10 +65,12 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
             format++;
             char c = (char) va_arg(parameters, int);
             if (!maxrem) {
+                buffer[written] = '\0';
                 return -1;
             }
 
             if(!write_to_buffer(&c, sizeof(c), buffer, written)) {
+                buffer[written] = '\0';
                 return -1;
             }
 
@@ -80,6 +82,7 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
             const char* str = va_arg(parameters, const char*);
             size_t len = strlen(str); 
             if (maxrem < len) {
+                buffer[written] = '\0';
                 return -1;
             }
 
@@ -92,6 +95,7 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
             format = format_began_at;
             size_t len = strlen(format);
             if (maxrem < len) {
+                buffer[written] = '\0';
                 return -1;
             }
             if (!write_to_buffer(format, len,  buffer, written)) {
