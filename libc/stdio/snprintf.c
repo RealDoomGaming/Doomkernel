@@ -44,10 +44,12 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
             }
 
             if (maxrem < amount) {
+                buffer[written] = '\0';
                 return -1;
             }
 
             if (!write_to_buffer(format, amount, buffer, written)) {
+                buffer[written] = '\0';
                 return -1;
             }
 
