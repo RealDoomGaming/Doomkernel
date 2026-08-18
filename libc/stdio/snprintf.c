@@ -22,6 +22,10 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
     va_list parameters;
     va_start(parameters, format);
 
+    if (value == 0) {
+        return 0;
+    }
+
     size_t limit = value - 1;
     int written = 0;
 
@@ -39,7 +43,7 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
                 amount++;
             }
 
-            if (maxrem < limit) {
+            if (maxrem < amount) {
                 return -1;
             }
 
