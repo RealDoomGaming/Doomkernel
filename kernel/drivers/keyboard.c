@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include <include/interrupts/isr.h>
 #include <include/keyboard/keyboard.h>
 
 // here we define a buffer for the keycache
@@ -20,3 +21,15 @@ static const char scancode_ascii[] = {
    '*',   0, ' '
 };
 
+void keyboard_handler(interrupt_frame_t *frame) {
+
+}
+
+void keyboard_init() {
+    // in this function we init, you guessed it, the keyboard
+    // firstly we set the head and tail of the keyboard cache
+    kbd_head = 0;
+    kbd_tail = 0;
+
+    register_interrupt_handler(33, keyboard_handler)
+}

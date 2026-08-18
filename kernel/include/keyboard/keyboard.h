@@ -3,6 +3,5 @@
 
 void keyboard_init();
 char keyboard_get_key();
-void keyboard_irq();
 
 #endif
