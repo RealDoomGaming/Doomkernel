@@ -19,12 +19,12 @@ int snprintf(char* buffer, size_t value, const char* format, ...) {
     // it puts the characters into the buffer for how many times was defined in the value parameter
     // this is the same code as in the printf function just modified a bit so for comments refer to the printf.c file
 
-    va_list parameters;
-    va_start(parameters, format);
-
     if (value == 0) {
         return 0;
     }
+
+    va_list parameters;
+    va_start(parameters, format);
 
     size_t limit = value - 1;
     int written = 0;
