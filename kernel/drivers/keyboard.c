@@ -138,3 +138,8 @@ char keyboard_get_key() {
   // and lastly return the character we have read
   return character;
 }
+
+int keyboard_has_key() {
+  // we also want a function for checking if the buffer already has a key
+  return kbd_tail != kbd_head;
+}
