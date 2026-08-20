@@ -27,6 +27,8 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     // just a msg
     printf("[terminal] cursors and color set, buffer set to VGA and screen cleared\n");
 
+    printf("******INTERRUPTS******\n");
+
     // here we init the entire interrupt stuff
     idt_init();
     pic_remap(0x20, 0x28);
@@ -42,6 +44,8 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     __asm__ volatile("int3");
     printf("[test] we are still alive (no kernel panic)\n");
 
+    printf("******KEYBOARD******\n");
+
     // we need to init the keyboard here
     keyboard_init();
     printf("[keyboard] irq1 registered\n");
@@ -54,6 +58,9 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
         // and we directly print it to the terminal
         terminal_put_char(typed);
     } while (typed != 27); // 27 stands for the escape key
+    printf("\n");
+
+    printf("******MEMORY******\n");
 
     // then we init the memory
     printf("[memory] BIOS reported %d usable memory map entries\n", (int64_t)mmap_count);
