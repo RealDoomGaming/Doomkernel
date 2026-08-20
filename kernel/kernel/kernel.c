@@ -6,6 +6,7 @@
 #include <interrupts/pic.h>
 #include <interrupts/isr.h>
 #include <kernel/tty.h>
+#include <keyboard/keyboard.h>
 
 extern uint64_t kernel_end;
 
@@ -19,6 +20,7 @@ void breakpoint_handler(interrupt_frame_t *frame) {
 void register_breakpoint_handler() {
     register_interrupt_handler(3, breakpoint_handler);
 }
+
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     // first thing we do is init the terminal
     terminal_init();
@@ -39,6 +41,19 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     printf("[test] triggering breakpoint\n");
     __asm__ volatile("int3");
     printf("[test] we are still alive (no kernel panic)\n");
+
+    // we need to init the keyboard here
+    keyboard_init();
+    printf("[keyboard] irq1 registered\n");
+    // then we also have a test where we stop everything and have the user type something and escape is for exiting this loop
+    printf("[test] type something and press escape to stop\n");
+    char typed;
+    do {
+        // we get a input key
+        typed = keyboard_get_key();
+        // and we directly print it to the terminal
+        terminal_put_char(typed);
+    } while (typed != 27); // 27 stands for the escape key
 
     // then we init the memory
     printf("[memory] BIOS reported %d usable memory map entries\n", (int64_t)mmap_count);
