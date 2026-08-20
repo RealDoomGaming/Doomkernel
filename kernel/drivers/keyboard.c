@@ -123,3 +123,18 @@ void keyboard_init() {
     // then we set the keyboard enabled to 1 so true
     __kbd_enabled = 1;
 }
+
+char keyboard_get_key() {
+  // this function is for getting a key when it gets typed
+  // and the first thing we do is wait until a key gets typed
+  while (kbd_head == kbd_tail) {
+    __asm__ volatile("hlt");
+  }
+
+  // then we actually get the character from our buffer 
+  char character = (char)keycache[kbd_tail];
+  // then we have to advance the tail by 1
+  kbd_tail = (kbd_tail + 1) & (KBD_BUFFER_SIZE - 1);
+  // and lastly return the character we have read
+  return character;
+}
