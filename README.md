@@ -15,7 +15,7 @@ Doomkernel is my own 64 bit kernel written from scratch which boots using my own
 - [x] Memory management (physical/virtual, heap)
 - [x] Interrupts
 - [ ] Multithreaded kernel
-- [ ] Keyboard support
+- [ ] Keyboard support (just need backspace implemented)
 - [ ] Internal kernel debugger
 - [ ] Filesystem support (+ initialization ramdisk)
 
