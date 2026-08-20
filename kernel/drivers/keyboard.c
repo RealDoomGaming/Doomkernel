@@ -48,7 +48,7 @@ void kbd_buffer_push(char character) {
 }
 
 void keyboard_handler(interrupt_frame_t *frame) {
-  void(frame);
+  (void)frame;
 
   // we read one byte from the 0x60 port which is the data port in our case
   // we also tell the controller that we have processed the key interrupt

@@ -20,20 +20,19 @@ ST2  := $(BOOTDIR)/src/stage2.asm
 LINKER := $(BOOTDIR)/linker/linker.ld
 INCDIR := $(BOOTDIR)/src/
 
-# every c file in kernel/kernel/ is part of the kernel so adding a new one needs no change down here
-KERN_SRC := $(wildcard kernel/kernel/*.c)
+# every c file one level under kernel/ is part of the kernel, that covers kernel/kernel/, kernel/interrupts/,
+# kernel/drivers/ and any directory we add later so dropping a new file in needs no change down here
+KERN_SRC := $(wildcard kernel/*/*.c)
 KERN_OBJ := $(patsubst kernel/%.c,build/%.o,$(KERN_SRC))
 
-# the architecture specific part of the kernel (tty, ports, gdt, ...), same deal, drop a file in and it builds
+# the architecture specific part of the kernel (tty, ports, gdt, ...) sits one level deeper
+# so it gets its own wildcard, only the arch we build for is picked up
 ARCH_SRC := $(wildcard $(ARCHDIR)/*.c)
 ARCH_OBJ := $(patsubst kernel/%.c,build/%.o,$(ARCH_SRC))
 
-# the interrupt side of the kernel (idt, isr, pic), same wildcard deal as above
-INT_SRC := $(wildcard kernel/interrupts/*.c)
-INT_OBJ := $(patsubst kernel/%.c,build/%.o,$(INT_SRC))
-
 # the asm parts of the kernel like the isr/irq stubs, assembled to elf64 so they link with the c code
-KASM_SRC := $(wildcard kernel/*/*.asm)
+# same split as above, one wildcard for the generic parts and one for the arch specific ones
+KASM_SRC := $(wildcard kernel/*/*.asm) $(wildcard $(ARCHDIR)/*.asm)
 KASM_OBJ := $(patsubst kernel/%.asm,build/%.o,$(KASM_SRC))
 
 # the libc is mostly split into one directory per header (stdio/, string/, ...) but files like panic.c
@@ -43,7 +42,7 @@ LIBC_OBJ := $(patsubst libc/%.c,build/libc/%.o,$(LIBC_SRC))
 
 # every c object we compile ourselves, used for the header dependency files further down
 # the asm objects stay out of here since nasm writes no .d files
-OBJS := $(KERN_OBJ) $(ARCH_OBJ) $(INT_OBJ) $(LIBC_OBJ)
+OBJS := $(KERN_OBJ) $(ARCH_OBJ) $(LIBC_OBJ)
 
 # flags
 # kernel/include holds the kernel only headers, libc/include the ones the libc exposes
