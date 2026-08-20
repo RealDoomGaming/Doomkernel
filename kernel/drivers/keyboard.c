@@ -2,6 +2,7 @@
 #include <interrupts/isr.h>
 #include <keyboard/keyboard.h>
 #include <io/ports.h>
+#include <interrupts/pic.h>
 
 // here we define a buffer for the keycache
 #define KBD_BUFFER_SIZE 256
@@ -111,9 +112,14 @@ void keyboard_init() {
     // firstly we set the head and tail of the keyboard cache
     kbd_head = 0;
     kbd_tail = 0;
+    kbd_caps = 0;
+    kbd_shift = 0;
 
     // we register the keyboard handler
     register_interrupt_handler(33, keyboard_handler);
+    // we also need to clear the pic mask
+    pic_clear_mask(1);
+
     // then we set the keyboard enabled to 1 so true
     __kbd_enabled = 1;
 }
