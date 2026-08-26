@@ -10,8 +10,6 @@
 // and then finally the port on the chip where we will write the divisor to
 #define PIT_CHANNEL0 0x40
 
-volatile uint64_t ticks;
-
 static inline void io_wait() {
     // this is used because writes to an io port execute faster then the internal Pics circuitry can process them
     // so writing a dummy byte to port 0x80 forces the cpu to pause for a second

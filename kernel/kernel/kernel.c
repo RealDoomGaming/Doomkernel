@@ -7,6 +7,7 @@
 #include <interrupts/isr.h>
 #include <kernel/tty.h>
 #include <keyboard/keyboard.h>
+#include <timer/pit.h>
 
 extern uint64_t kernel_end;
 
@@ -59,6 +60,19 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
         terminal_put_char(typed);
     } while (typed != 27); // 27 stands for the escape key
     printf("\n");
+
+    printf("******TIMER******\n");
+
+    // we init the timer here with 100hz
+    timer_init(100);
+    printf("[timer] timer pit initialized with 100hz\n");
+
+    // then we wait for 300 ticks (3 seconds) so we know irq0 is active and firing
+    uint64_t start = ticks;
+    while (ticks - start < 300) {
+        __asm__ volatile("hlt");
+    }
+    printf("[timer] 300 ticks passed (3 seconds) so the timer is alive!\n");
 
     printf("******MEMORY******\n");
 

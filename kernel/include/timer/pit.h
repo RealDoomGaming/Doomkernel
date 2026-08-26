@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+extern volatile uint64_t ticks;
+
 void timer_init(uint16_t);
 
 #endif
