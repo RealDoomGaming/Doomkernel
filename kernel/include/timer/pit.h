@@ -2,6 +2,7 @@
 #define _PIT_H
 
 #include <stdint.h>
+#include <interrupts/isr.h>
 
 extern volatile uint64_t ticks;
 extern interrupt_frame_t kernel_frame_template;
