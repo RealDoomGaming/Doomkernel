@@ -1,5 +1,6 @@
 #include <task/task.h>
 #include <stdlib.h>
+#include <string.h> 
 
 // here we define how much each task gets for its private stack (4096 are 4 MiB)
 #define STACK_SIZE_TASK 4096
