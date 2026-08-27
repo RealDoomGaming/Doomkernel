@@ -10,16 +10,29 @@
 task_t task_list[MAX_TASKS];
 
 void task_create(void (*entry)(void), uint16_t id) {
+    if (id >= MAX_TASKS) {
+        return;
+    }
+
     // in this function we make a new task, but that should be self explenatory from the name
     task_t *task = &task_list[id];
 
     // setting the start and end of the tasks stack
     task->stack_start = malloc(STACK_SIZE_TASK);
     task->stack_top = (char *)task->stack_start + STACK_SIZE_TASK;
+    // we should also zero out everything for that new frame
+    memset(&task->frame, 0, sizeof(interrupt_frame_t));
+
+    // rip is the instruction pointer which needs to hold a address and converting the function into uint64_t gives us the address
+    task->frame.rip = (uint64_t)entry;
+    // then the same for the stack pointer
+    task->frame.rsp = (uint64_t)task->stack_top;
+    // and then set all of the other flags
+    task->frame.cs = kernel_frame_template.cs;
+    task->frame.ss = kernel_frame_template.ss;
+    task->frame.rflags = kernel_frame_template.rflags;
 
     // and then the other stuff
     task->id = id;
     task->state = TASK_READY;
-
-    // havent decided if we should return or directly insert
 }
