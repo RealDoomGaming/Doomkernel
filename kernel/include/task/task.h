@@ -1,7 +1,7 @@
 #ifndef _TASK_H
 #define _TASK_H
 
-#include <isr.h>
+#include <interrupts/isr.h>
 #include <stdint.h>
 
 // the enum for the different states a task can have, for now we only really need the first two
@@ -13,7 +13,7 @@ typedef enum {
 
 // the struct for the tasks
 typedef struct {
-    interrupt_frame_t *frame;
+    interrupt_frame_t frame;
     void *stack_start;
     void *stack_top;
     task_state_t state;
