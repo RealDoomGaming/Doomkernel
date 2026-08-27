@@ -10,6 +10,26 @@
 
 // list of all of our tasks
 task_t task_list[MAX_TASKS];
+// which task is currently being "worked on"
+uint16_t current_task = 0;
+uint16_t task_count = 0;
+
+void schedule(interrupt_frame_t *frame) {
+    if (task_count == 0) {
+        return;
+    }
+
+    // here we basically just freeze the current frame
+    task_list[current_task].frame = *frame;
+    // then we pick the next task to do
+    current_task = (current_task + 1) % task_count;
+    // but then we also need to load it
+    *frame = task_list[current_task].frame;
+}
+
+void scheduler_enable() {
+    
+}
 
 void task_create(void (*entry)(void), uint16_t id) {
     if (id >= MAX_TASKS) {
@@ -37,4 +57,5 @@ void task_create(void (*entry)(void), uint16_t id) {
     // and then the other stuff
     task->id = id;
     task->state = TASK_READY;
+    task_count++;
 }

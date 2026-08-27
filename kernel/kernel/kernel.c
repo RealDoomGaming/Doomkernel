@@ -8,6 +8,7 @@
 #include <kernel/tty.h>
 #include <keyboard/keyboard.h>
 #include <timer/pit.h>
+#include <task/task.h>
 
 extern uint64_t kernel_end;
 
@@ -20,6 +21,27 @@ void breakpoint_handler(interrupt_frame_t *frame) {
 // and in this we actually register it
 void register_breakpoint_handler() {
     register_interrupt_handler(3, breakpoint_handler);
+}
+
+// these two functions are for testing the scheduler later
+void task_a() {
+    for (int i = 0; i < 20; i++) {
+        printf("A");
+    }
+
+    // never return - just go idle once we're done
+    while (1) {
+        __asm__ volatile("hlt");
+    }
+}
+void task_b() {
+    for (int i = 0; i < 20; i++) {
+        printf("B");
+    }
+
+    while (1) {
+        __asm__ volatile("hlt");
+    }
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
@@ -73,6 +95,13 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
         __asm__ volatile("hlt");
     }
     printf("[timer] 300 ticks passed (3 seconds) so the timer is alive!\n");
+
+    printf("******TASKS******\n");
+
+    // here we test our task scheduler by firstly making two tasks
+    task_create(task_a, 0);
+    task_create(task_b, 1);
+    scheduler_enable();
 
     printf("******MEMORY******\n");
 

@@ -10,7 +10,7 @@ ARCH := x86_64
 ARCHDIR := kernel/arch/$(ARCH)
 
 # how many 512 byte sectors stage 1 pulls off the disk for stage 2 + the kernel
-STAGE2_SECTORS := 32
+STAGE2_SECTORS := 64
 STAGE2_BYTES := $(shell expr $(STAGE2_SECTORS) \* 512)
 
 # the bootloader lives in its own directory so it stays a self contained project we can update on its own
