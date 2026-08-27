@@ -14,6 +14,8 @@
 // irq0 handler bumps it behind the back of whatever code is currently running
 volatile uint64_t ticks = 0;
 
+interrupt_frame_t kernel_frame_template;
+
 static inline void io_wait() {
     // this is used because writes to an io port execute faster then the internal Pics circuitry can process them
     // so writing a dummy byte to port 0x80 forces the cpu to pause for a second
@@ -21,9 +23,8 @@ static inline void io_wait() {
 }
 
 static void pit_handler(interrupt_frame_t *frame) {
-    (void)frame;
-    // later we do more stuff here
     ticks++;
+    kernel_frame_template = *frame;
 }
 
 void timer_init(uint16_t frequency) {
