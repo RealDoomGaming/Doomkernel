@@ -99,3 +99,51 @@ void task_create(void (*entry)(void)) {
     task->state = TASK_READY;
     task_count++;
 }
+
+void shift_task_list_down(uint16_t start) {
+    uint16_t current = start;
+
+    for (int16_t i = start; i < task_count; i++) {
+        task_list[current] = task_lsit[current + 1];
+        current++;
+    }
+}
+
+void reap(uint16_t task) {
+    // in this function we basically free the memory and remove the task
+
+    // firstly we free the memory in the tasks stack
+    free(task_list[task].stack_start);
+
+    // then we need to shift everything past this current task down one
+    shift_task_list_down(task);
+
+    // then we shrink task count
+    task_count--;
+    // and we also shrink the current task down by one
+    // but before we can do that we have to firstly check if the current task is bigger then the task we want to remove
+    // or if current task is at the last task we have
+    if (current_task > task) {
+        current_task--;
+    } else if (current_task >= task_count) {
+        current_task = 0;
+    }
+}
+
+void task_reap() {
+
+    for (int16_t i = 0; i < task_count; i++) {
+        if (task_list[i].state == TASK_DONE) {
+            reap(i);
+            i--;
+        }
+    }
+}
+
+void task_reaper() {
+    // in this function we check periodically if any tasks are done with the task_reap function
+    while (1) {
+        task_reap();
+        for (int i = 0; i < 1000000; i++);
+    }
+}

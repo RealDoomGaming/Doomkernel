@@ -26,5 +26,7 @@ typedef struct {
 void task_create(void (*entry)(void));
 // for scheduling the tasks
 void schedule(interrupt_frame_t*);
+// a function for reaping (deleting all done tasks) periodically
+void task_reaper();
 
 #endif
