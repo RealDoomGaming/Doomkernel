@@ -28,5 +28,7 @@ void task_create(void (*entry)(void));
 void schedule(interrupt_frame_t*);
 // a function for reaping (deleting all done tasks) periodically
 void task_reaper();
+// function for setting the task as done
+void task_exit();
 
 #endif
