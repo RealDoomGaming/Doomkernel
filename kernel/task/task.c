@@ -13,16 +13,25 @@ task_t task_list[MAX_TASKS];
 // which task is currently being "worked on"
 uint16_t current_task = 0;
 uint16_t task_count = 0;
+// this is so we know when the scheduling was started
+static uint8_t scheduler_started = 0;
 
 void schedule(interrupt_frame_t *frame) {
     if (task_count == 0) {
         return;
     }
 
-    // here we basically just freeze the current frame
-    task_list[current_task].frame = *frame;
-    // then we pick the next task to do
-    current_task = (current_task + 1) % task_count;
+    // if the scheduling is on then we can schedule stuff like normal
+    if (scheduler_started) {
+        // here we basically just freeze the current frame
+        task_list[current_task].frame = *frame;
+        // then we pick the next task to do
+        current_task = (current_task + 1) % task_count;
+    } else {
+        // and else we turn it on
+        scheduler_started = 1;
+    }
+
     // but then we also need to load it
     *frame = task_list[current_task].frame;
 }

@@ -16,8 +16,6 @@
 volatile uint64_t ticks = 0;
 
 interrupt_frame_t kernel_frame_template;
-
-// this is so we know when the scheduling is enabled
 static uint8_t scheduling_enabled = 0;
 
 static inline void io_wait() {
