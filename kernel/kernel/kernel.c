@@ -99,8 +99,8 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     printf("******TASKS******\n");
 
     // here we test our task scheduler by firstly making two tasks
-    task_create(task_a, 0);
-    task_create(task_b, 1);
+    task_create(task_a);
+    task_create(task_b);
     scheduler_enable();
 
     printf("******MEMORY******\n");

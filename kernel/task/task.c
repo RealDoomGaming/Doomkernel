@@ -2,17 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <timer/pit.h>
+#include <stdio.h>
 
 // here we define how much each task gets for its private stack (4096 are 4 MiB)
 #define STACK_SIZE_TASK 4096
 // and here we define the max amount of tasks
-#define MAX_TASKS 5
+#define MAX_TASKS 10
 
 // list of all of our tasks
 task_t task_list[MAX_TASKS];
 // which task is currently being "worked on"
-uint16_t current_task = 0;
-uint16_t task_count = 0;
+int16_t current_task = 0;
+int16_t task_count = 0;
 // this is so we know when the scheduling was started
 static uint8_t scheduler_started = 0;
 
@@ -36,8 +37,19 @@ void schedule(interrupt_frame_t *frame) {
     *frame = task_list[current_task].frame;
 }
 
-void task_create(void (*entry)(void), uint16_t id) {
-    if (id >= MAX_TASKS) {
+int16_t task_get_next_id() {
+    if (task_count >= MAX_TASKS) {
+        return -1;
+    }
+
+    return task_count;
+}
+
+void task_create(void (*entry)(void)) {
+    int16_t id = task_get_next_id();
+
+    if (id < 0) {
+        printf("[task] no free task slots\n");
         return;
     }
 

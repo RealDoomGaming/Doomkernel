@@ -17,12 +17,12 @@ typedef struct {
     void *stack_start;
     void *stack_top;
     task_state_t state;
-    uint16_t id;
+    int16_t id;
 } task_t;
 
 // since I am not sure how the compiler handels pointers to function in the h file I will write everything including the parameter names 
 // which I dont usually do
-void task_create(void (*entry)(void), uint16_t id);
+void task_create(void (*entry)(void));
 // for scheduling the tasks
 void schedule(interrupt_frame_t*);
 
