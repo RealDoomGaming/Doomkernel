@@ -8,7 +8,8 @@
 typedef enum {
     TASK_READY,
     TASK_RUNNING,
-    TASK_BLOCKED
+    TASK_BLOCKED,
+    TASK_DONE
 } task_state_t;
 
 // the struct for the tasks

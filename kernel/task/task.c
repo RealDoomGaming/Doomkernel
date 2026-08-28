@@ -45,6 +45,16 @@ int16_t task_get_next_id() {
     return task_count;
 }
 
+void task_exit() {
+    // when we exit a task we have to mark it as done
+    task_list[current_task].state = TASK_DONE;
+    
+    // and halt the process or something
+    while (1) {
+        __asm__ volatile("hlt");
+    }
+}
+
 void task_create(void (*entry)(void)) {
     int16_t id = task_get_next_id();
 
