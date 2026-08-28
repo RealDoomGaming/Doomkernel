@@ -24,6 +24,6 @@ typedef struct {
 // which I dont usually do
 void task_create(void (*entry)(void), uint16_t id);
 // for scheduling the tasks
-void schedule(interrupt_frame_t);
+void schedule(interrupt_frame_t*);
 
 #endif
