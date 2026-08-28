@@ -23,7 +23,7 @@ int16_t get_next_task() {
     for (int16_t i = 0; i < task_count; i++) {
         task = (int16_t)((task + 1) % task_count);
         if (task_list[task].state != TASK_DONE) {
-            return task
+            return task;
         }
     }
 
