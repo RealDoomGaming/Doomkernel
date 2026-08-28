@@ -94,6 +94,7 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     printf("******TASKS******\n");
 
     // here we test our task scheduler by firstly making two tasks
+    printf("[tasks] created two test tasks which print A and B\n");
     task_create(task_a);
     task_create(task_b);
     task_create(task_reaper);
