@@ -29,19 +29,14 @@ void task_a() {
         printf("A");
     }
 
-    // never return - just go idle once we're done
-    while (1) {
-        __asm__ volatile("hlt");
-    }
+    task_exit();
 }
 void task_b() {
     for (int i = 0; i < 20; i++) {
         printf("B");
     }
 
-    while (1) {
-        __asm__ volatile("hlt");
-    }
+    task_exit();
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
@@ -101,6 +96,7 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
     // here we test our task scheduler by firstly making two tasks
     task_create(task_a);
     task_create(task_b);
+    task_create(task_reaper);
     scheduler_enable();
 
     printf("******MEMORY******\n");
