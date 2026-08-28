@@ -2,6 +2,7 @@
 #include <io/ports.h>
 #include <interrupts/isr.h>
 #include <interrupts/pic.h>
+#include <task/task.h>
 
 // this is the fixed base frequency of the PIT chip, so you cant really choose it
 #define PIT_BASE_FREQUENCY 1193182
@@ -16,6 +17,9 @@ volatile uint64_t ticks = 0;
 
 interrupt_frame_t kernel_frame_template;
 
+// this is so we know when the scheduling is enabled
+static uint8_t scheduling_enabled = 0;
+
 static inline void io_wait() {
     // this is used because writes to an io port execute faster then the internal Pics circuitry can process them
     // so writing a dummy byte to port 0x80 forces the cpu to pause for a second
@@ -25,6 +29,16 @@ static inline void io_wait() {
 static void pit_handler(interrupt_frame_t *frame) {
     ticks++;
     kernel_frame_template = *frame;
+
+    // if scheduling is enabled then we can schedule it
+    if (scheduling_enabled) {
+        schedule(frame);
+    }
+}
+
+// we set scheduling enabled here
+void scheduler_enable(void) {
+    scheduling_enabled = 1;
 }
 
 void timer_init(uint16_t frequency) {

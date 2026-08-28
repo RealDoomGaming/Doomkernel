@@ -27,10 +27,6 @@ void schedule(interrupt_frame_t *frame) {
     *frame = task_list[current_task].frame;
 }
 
-void scheduler_enable() {
-    
-}
-
 void task_create(void (*entry)(void), uint16_t id) {
     if (id >= MAX_TASKS) {
         return;
