@@ -103,8 +103,8 @@ void task_create(void (*entry)(void)) {
 void shift_task_list_down(uint16_t start) {
     uint16_t current = start;
 
-    for (int16_t i = start; i < task_count; i++) {
-        task_list[current] = task_lsit[current + 1];
+    for (int16_t i = start; i < task_count - 1; i++) {
+        task_list[current] = task_list[current + 1];
         current++;
     }
 }
