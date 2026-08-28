@@ -23,5 +23,7 @@ typedef struct {
 // since I am not sure how the compiler handels pointers to function in the h file I will write everything including the parameter names 
 // which I dont usually do
 void task_create(void (*entry)(void), uint16_t id);
+// for scheduling the tasks
+void schedule(interrupt_frame_t);
 
 #endif
