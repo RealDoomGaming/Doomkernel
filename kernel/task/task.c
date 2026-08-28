@@ -17,6 +17,19 @@ int16_t task_count = 0;
 // this is so we know when the scheduling was started
 static uint8_t scheduler_started = 0;
 
+int16_t get_next_task() {
+    uint16_t task = current_task;
+
+    for (int16_t i = 0; i < task_count; i++) {
+        task = (int16_t)((task + 1) % task_count);
+        if (task_list[task].state != TASK_DONE) {
+            return task
+        }
+    }
+
+    return current_task;
+}
+
 void schedule(interrupt_frame_t *frame) {
     if (task_count == 0) {
         return;
@@ -27,7 +40,7 @@ void schedule(interrupt_frame_t *frame) {
         // here we basically just freeze the current frame
         task_list[current_task].frame = *frame;
         // then we pick the next task to do
-        current_task = (current_task + 1) % task_count;
+        current_task = get_next_task();
     } else {
         // and else we turn it on
         scheduler_started = 1;
