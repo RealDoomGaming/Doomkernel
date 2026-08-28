@@ -116,6 +116,9 @@ void reap(uint16_t task) {
     // firstly we free the memory in the tasks stack
     free(task_list[task].stack_start);
 
+    // since this code is really really sensitive we have to disable interrupts here
+    __asm__ volatile ("cli");
+
     // then we need to shift everything past this current task down one
     shift_task_list_down(task);
 
@@ -129,6 +132,9 @@ void reap(uint16_t task) {
     } else if (current_task >= task_count) {
         current_task = 0;
     }
+
+    // we enabled interrupts again once we are done
+    __asm__ volatile ("sti");
 }
 
 void task_reap() {
