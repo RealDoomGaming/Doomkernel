@@ -14,6 +14,9 @@ STAGE2_OFFSET   equ 0x8000      ;; where we will load our second stage
 %endif
 STAGE2_LBA      equ 1           ;; this is where on the disk the second stage starts, sector 0 is always the boot sector and since stage 2 of our bootloader was written directly after our bootloader it has to be at sector 0
 
+;; we need this here so we can save the value of dl and later access it from the second stage of the bootloader
+BOOT_DRIVE_SHARED equ 0x0500
+
 ;; we need to jmp over the bios thingis
 jmp start 
 
@@ -56,6 +59,7 @@ start:
     mov sp, 0x7c00  ;; why we set it to 0x7c00, because the stack grows downward into free memory
 
     mov [boot_drive], dl   ;; here we save dl (we need it for the disk) because only at the start we know its right and not some garbage 
+    mov byte [BOOT_DRIVE_SHARED], dl    ;; we also save dl to a memory address which the second stage of the bootloader can access later
 
     ;; enabeling the a 20 line
     ;; before we do that we need to test if the bios has already enabled it

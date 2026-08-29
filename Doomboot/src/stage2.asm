@@ -23,6 +23,9 @@ INITRD_LBA     equ 1 + STAGE2_SECTORS
     %define INITRD_SECTORS 4
 %endif
 
+;; same as in the first stage we have an address where the dl is saved so we can access it here in the second stage when loading our second dap
+BOOT_DRIVE_SHARED equ 0x0500
+
 ;; we define a second dap here for our file system
 align 4     
 dap:
@@ -39,7 +42,11 @@ start2:
     call detect_memory
 
     ;; here we do a initrd load so we load a filesystem while we are still in real mode
-
+    mov si, dap            
+    mov ah, 0x42            
+    mov dl, [BOOT_DRIVE_SHARED]
+    int 0x13                
+    jc initrd_error           
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
@@ -92,6 +99,11 @@ detect_memory:
     mov [mmap_entry_count], bp      ;; this stores the amount of entries which lies in bp in our own count
     popa                            ;; then we restore the registers we pushed from the stack
     ret                             ;; and simply return
+
+
+initrd_error:
+    ;; this label is just an inifite loop, might add a print later
+    jmp initrd_error
 
 ;; here we will define our gdt, in our gdt we want to five descriptors
 ;; 1. null descriptor -> this one is required by the cpu I think, but either way we need it

@@ -13,6 +13,10 @@ ARCHDIR := kernel/arch/$(ARCH)
 STAGE2_SECTORS := 64
 STAGE2_BYTES := $(shell expr $(STAGE2_SECTORS) \* 512)
 
+INITRD_BIN     := build/initrd.bin
+INITRD_SIZE    := $(shell stat -c %s $(INITRD_BIN))
+INITRD_SECTORS := $(shell expr \( $(INITRD_SIZE) + 511 \) / 512)
+
 # the bootloader lives in its own directory so it stays a self contained project we can update on its own
 BOOTDIR := Doomboot
 ST1  := $(BOOTDIR)/src/stage1.asm
@@ -69,7 +73,7 @@ $(BIN1): $(ST1) Makefile
 # compiling stage 2 into elf64 object file so we can merge it with the c kernel later
 $(OBJ2): $(ST2)
 	@mkdir -p $(@D)
-	$(ASM) -f elf64 -i $(INCDIR) $(ST2) -o $(OBJ2)
+	$(ASM) -f elf64 -i $(INCDIR) -DSTAGE2_SECTORS=$(STAGE2_SECTORS) -DINITRD_SECTORS=$(INITRD_SECTORS) $(ST2) -o $(OBJ2)
 
 # compile every c file of the kernel into an elf64 object file
 # this covers kernel/kernel/, kernel/interrupts/ as well as kernel/arch/<arch>/, build/ mirrors the source tree
