@@ -13,9 +13,15 @@ ARCHDIR := kernel/arch/$(ARCH)
 STAGE2_SECTORS := 64
 STAGE2_BYTES := $(shell expr $(STAGE2_SECTORS) \* 512)
 
-INITRD_BIN     := build/initrd.bin
-INITRD_SIZE    := $(shell stat -c %s $(INITRD_BIN))
-INITRD_SECTORS := $(shell expr \( $(INITRD_SIZE) + 511 \) / 512)
+# same idea as STAGE2_SECTORS: a reserved budget with headroom. the build
+# fails loudly if the real initrd ever outgrows it instead of silently
+# loading a truncated filesystem
+INITRD_SECTORS := 64
+INITRD_BYTES := $(shell expr $(INITRD_SECTORS) \* 512)
+
+# host tool that builds the initrd - uses your SYSTEM gcc, not the cross
+# compiler, since it runs on your machine, not the target
+HOSTCC := gcc
 
 # the bootloader lives in its own directory so it stays a self contained project we can update on its own
 BOOTDIR := Doomboot
@@ -75,6 +81,23 @@ $(OBJ2): $(ST2)
 	@mkdir -p $(@D)
 	$(ASM) -f elf64 -i $(INCDIR) -DSTAGE2_SECTORS=$(STAGE2_SECTORS) -DINITRD_SECTORS=$(INITRD_SECTORS) $(ST2) -o $(OBJ2)
 
+build/tools/pack_initrd: tools/pack_initrd.c
+	@mkdir -p $(@D)
+	$(HOSTCC) -Wall -Wextra $< -o $@
+
+INITRD_FILES := $(wildcard initrd/*)
+INITRD_BIN := build/initrd.bin
+
+$(INITRD_BIN): build/tools/pack_initrd $(INITRD_FILES)
+	@mkdir -p $(@D)
+	build/tools/pack_initrd $(INITRD_BIN) $(INITRD_FILES)
+	@size=$$(stat -c %s $(INITRD_BIN)); \
+	if [ $$size -gt $(INITRD_BYTES) ]; then \
+		echo "ERROR: $(INITRD_BIN) is $$size bytes but only $(INITRD_BYTES) bytes are reserved"; \
+		echo "       bump INITRD_SECTORS in the Makefile"; \
+		exit 1; \
+	fi
+
 # compile every c file of the kernel into an elf64 object file
 # this covers kernel/kernel/, kernel/interrupts/ as well as kernel/arch/<arch>/, build/ mirrors the source tree
 build/%.o: kernel/%.c
@@ -100,7 +123,7 @@ $(BIN2): $(OBJ2) $(OBJS) $(KASM_OBJ) $(LINKER)
 # combining both stages into an img file
 # first we make sure stage 2 + the kernel still fit in the sectors stage 1 loads
 # if they dont we stop right here instead of booting into a triple fault
-$(IMG): $(BIN1) $(BIN2) Makefile
+$(IMG): $(BIN1) $(BIN2) $(INITRD_BIN) Makefile
 	@size=$$(stat -c %s $(BIN2)); \
 	if [ $$size -gt $(STAGE2_BYTES) ]; then \
 		echo "ERROR: $(BIN2) is $$size bytes but stage 1 only loads $(STAGE2_BYTES)"; \
@@ -109,6 +132,8 @@ $(IMG): $(BIN1) $(BIN2) Makefile
 	fi
 	$(CAT) $(BIN1) $(BIN2) > $(IMG)
 	$(TRUN) -s $$((512 + $(STAGE2_BYTES))) $(IMG)
+	$(CAT) $(INITRD_BIN) >> $(IMG)
+	$(TRUN) -s $$((512 + $(STAGE2_BYTES) + $(INITRD_BYTES))) $(IMG)
 
 # boot the finished image, same thing run.sh does
 run: $(IMG)
