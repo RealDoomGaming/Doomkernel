@@ -13,10 +13,33 @@ MMAP_ENTRY_SIZE equ 24
 ;; and the address where the mmap buffer is supposed to go
 MMAP_BUFFER equ 0x20000
 
+;; these are values we need for loading the dap a second time later
+INITRD_SEGMENT equ 0x5000
+INITRD_OFFSET  equ 0x0000
+INITRD_LBA     equ 1 + STAGE2_SECTORS
+
+;; if the sectors arent defined in the makefile then we have a fallback just in case
+%ifndef INITRD_SECTORS
+    %define INITRD_SECTORS 4
+%endif
+
+;; we define a second dap here for our file system
+align 4     
+dap:
+    db 0x10
+    db 0
+    dw INITRD_SECTORS
+    dw INITRD_OFFSET
+    dw INITRD_SEGMENT
+    dq INITRD_LBA
+
 ;; we start here with the second stage of our bootloader
 start2:
     ;; before doing anything else we have to detect and save the memory map we get from the A820 since 0x15 only works in real mode (16 bit mode)
     call detect_memory
+
+    ;; here we do a initrd load so we load a filesystem while we are still in real mode
+
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
