@@ -15,6 +15,7 @@ typedef struct {
 } initrd_entry_t;
 
 void fs_init(uint64_t);
-uint64_t fs_read(char[32]);
+initrd_entry_t *fs_read(char*);
+void *fs_get_data(initrd_entry_t *entry);
 
 #endif

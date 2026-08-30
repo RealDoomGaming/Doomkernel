@@ -1,6 +1,7 @@
 #include <fs/fs.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 static initrd_entry_t  *fs_entries;
 static uint8_t *fs_data;
@@ -45,4 +46,8 @@ initrd_entry_t *fs_read(char *name) {
     }
 
     return NULL;
+}
+
+void *fs_get_data(initrd_entry_t *entry) {
+    return fs_data + entry->offset;
 }
