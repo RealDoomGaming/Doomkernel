@@ -28,6 +28,21 @@ void fs_init(uint64_t initrd_addr) {
     fs_data = (uint8_t *)(fs_entries + fs_file_count);
 }
 
-uint64_t fs_read(char[32] name) {
+initrd_entry_t *fs_read(char *name) {
+    // in this function we just loop through all files until we find one
+    // which has the matching name
+    
+    uint32_t count = 0;
+    initrd_entry_t *current = fs_entries;
 
+    while (count < fs_file_count) {
+        if (memcmp(current->name, name, 32) == 0) {
+            return current;
+        }
+
+        count++;
+        current++;
+    }
+
+    return NULL;
 }
