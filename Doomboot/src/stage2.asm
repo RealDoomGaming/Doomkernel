@@ -472,6 +472,7 @@ long_mode_entry:
     ;; before we call the kernel we have to load the memory map and the count of entries as arguments for the kernel
     mov rdi, MMAP_BUFFER
     movzx esi, word [mmap_entry_count]          ;; we use movxz here since we only move 16 bit into a 32 bit register and movzx fills the rest of the space with zeros
+    mov rdx, INITRD_SEGMENT * 16 + INITRD_OFFSET  ;; this will pass the address where our file system is at to the kernel
 
     ;; and then we can call the kernel
     call kernel_main

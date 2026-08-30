@@ -39,7 +39,7 @@ void task_b() {
     task_exit();
 }
 
-void kernel_main(uint64_t mmap_addr, uint16_t mmap_count) {
+void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
     // first thing we do is init the terminal
     terminal_init();
     // just a msg
