@@ -16,7 +16,7 @@ void fs_init(uint64_t initrd_addr) {
 
     initrd_header_t *initrd_header = (initrd_header_t *) initrd_addr;
 
-    if (memcmp(initrd_header->magic, "DSF1", 4) != 0) {
+    if (memcmp(initrd_header->magic, "DFS1", 4) != 0) {
         // the magic wasnt the same so we dont mount the file system
         printf("[fs] invalid magic for initrd so the fs isnt going to be mounted\n");
         fs_file_count = 0;
