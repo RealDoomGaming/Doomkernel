@@ -9,6 +9,7 @@
 #include <keyboard/keyboard.h>
 #include <timer/pit.h>
 #include <task/task.h>
+#include <fs/fs.h>
 
 extern uint64_t kernel_end;
 
@@ -109,6 +110,30 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     memory_init((uint64_t)&kernel_end, mmap, mmap_count);
     // also just a msg
     printf("[memory] heap beginning and end was set\n");
+
+    printf("******FILESYSTEM******\n");
+
+    // we init the filesystem here
+    fs_init(initrd_addr);
+    // then for testing we try to get our file we read when compiling
+    char query[32] = "doom.txt";
+    initrd_entry_t *entry = fs_read(query);
+
+    // and then we check if we found our entry
+    if (entry) {
+        printf("[fs] %s with size = %x\n", entry->name, entry->size);
+
+        char *data = (char *)fs_get_data(entry);
+
+        // we do this here because we dont know if the file is null terminated
+        for (uint32_t i = 0; i < entry->size; i++) {
+            terminal_put_char(data[i]);
+        }
+
+        printf("\n");
+    } else {
+        printf("[fs] %s file not found\n", query);
+    }
 
     // printing with our custom printf function :DD
     printf("Successfully booted into the kernel!\n");
