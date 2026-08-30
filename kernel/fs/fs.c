@@ -1,5 +1,10 @@
 #include <fs/fs.h>
 #include <stdint.h>
+#include <string.h>
+
+static initrd_entry_t  *fs_entries;
+static uint8_t *fs_data;
+static uint32_t fs_file_count;
 
 void fs_init(uint64_t initrd_addr) {
     // this function basically inits the whole file system stuff
@@ -8,7 +13,19 @@ void fs_init(uint64_t initrd_addr) {
     // then we set where the entries start
     // and also set where the raw file bytes start
 
-    
+    initrd_header_t *initrd_header = (initrd_header_t *) initrd_addr;
+
+    if (memcmp(initrd_header->magic, "DSF1", 4) != 0) {
+        // the magic wasnt the same so we dont mount the file system
+        printf("[fs] invalid magic for initrd so the fs isnt going to be mounted\n");
+        fs_file_count = 0;
+        
+        return;
+    }
+
+    fs_file_count = initrd_header->file_count;
+    fs_entries = (initrd_entry_t *)(initrd_addr + sizeof(initrd_header_t));
+    fs_data = (uint8_t *)(fs_entries + fs_file_count);
 }
 
 uint64_t fs_read(char[32] name) {
