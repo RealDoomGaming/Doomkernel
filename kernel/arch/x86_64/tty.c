@@ -80,7 +80,7 @@ void terminal_put_char(char c) {
 
     if (cursor_y >= VGA_HEIGHT) {
         clear_last_line();
-        cursor_y = 0;
+        cursor_x = 0;
     }
 }
 
