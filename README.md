@@ -31,7 +31,7 @@ Doomkernel is my own 64 bit kernel written from scratch which boots using my own
 ### Requirements:
 | Tool | What it's for |
 |------|----------------|
-| `x86_64-elf-gcc` | Cross-compiler that builds freestanding C for the kernel |
+| `gcc` | Cross-compiler that builds freestanding C for the kernel |
 | `nasm` | Assembles any low-level `.asm` stubs (entry point, ISRs, etc.) |
 | `qemu-system-x86_64` | Emulates a PC to actually boot the kernel |
 | `make` | Runs the build |
