@@ -13,6 +13,27 @@ typedef struct {
     uint8_t base_high;          // the last 8 bit of the base
 } __attribute__((packed)) gdt_entry;
 
+// struct for the tss entry
+typedef struct {
+    uint32_t reserved0;     // these are unused 4 bytes
+    // rsp0, 1 and 2 are the privilege Stack pointers for the different rings in the os
+    uint64_t rsp0;          
+    uint64_t rsp1;
+    uint64_t rsp2;
+    uint64_t reserved1;     // these are again unused
+    uint64_t ist[7];        // this is an array for 7 different distinct stack addresses
+    // these next two are also unused bytes
+    uint64_t reserved2;     
+    uint16_t reserved3;
+    uint16_t iomap_base;    // this is an offset for and I/O Permission Bitmap
+} __attribute__((packed)) tss_entry;
+
+// struct for when we want to load a new gdt with lgdt later
+struct gdt_pointer {
+    uint16_t limit;
+    uint64_t base;
+} __attribute__((packed));
+
 void set_gdt_entry(struct gdt_entry *entry, uint8_t access, uint8_t flags);
 
 
