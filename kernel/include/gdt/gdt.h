@@ -34,7 +34,7 @@ struct gdt_pointer {
     uint64_t base;
 } __attribute__((packed));
 
-void set_gdt_entry(struct gdt_entry *entry, uint8_t access, uint8_t flags);
-
+void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags);
+void init_gdt();
 
 #endif
