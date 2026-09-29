@@ -13,7 +13,7 @@ typedef struct {
     uint8_t base_high;          // the last 8 bit of the base
 } __attribute__((packed)) gdt_entry;
 
-
+void set_gdt_entry(struct gdt_entry *entry, uint8_t access, uint8_t flags);
 
 
 #endif
