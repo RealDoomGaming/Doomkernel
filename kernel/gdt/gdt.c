@@ -22,6 +22,29 @@ void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
     entry->base_high = 0x00;
 }
 
+void setup_tss_descriptor(tss_gdt_entry *tss_desc, uint64_t tss_base, uint32_t tss_limit) {
+    // here we basically just split up the base into their own individual bits
+    // we do this by ANDing everyting with all 1 bits so we keep the stuff we want
+    tss_desc->base_low = (uint16_t) tss_base & 0xFFFF;
+    tss_desc->base_middle = (uint8_t) (tss_base >> 16) & 0xFF;
+    tss_desc->base_high = (uint8_t) (tss_base >> 24) & 0xFF;
+    tss_desc->base_upper = (uint32_t) (tss_base >> 32);
+
+    // then we set the segment limits (granularity and limit)
+    tss_desc->limit_low = (uint16_t) tss_limit & 0xFFFF;        // here we get the bits from 0 to 5
+    tss_desc->granularity = (uint8_t) (tss_limit >> 16) & 0xF;  // and here from 16 to 19
+
+    // and then we set the access flag
+    // Bits 0 to 3 are type 64bit tss available (1001 = 0x9)
+    // Bit 4 is the System Descriptor (0)
+    // Bits 5 to 6 are the dpl ring (00)
+    // and Bit 7 is the Present flag (1)
+    tss_desc->access_flag = 0x89;
+
+    // and the last thing is if its a reserved fiel
+    tss_desc->reserved = 0;
+}
+
 void init_gdt(uint64_t kernel_top) {
     // firstly zero out the area where the tss entry will live
     memset(&system_tss, 0, sizeof(tss_entry));
@@ -42,5 +65,10 @@ void init_gdt(uint64_t kernel_top) {
     // then we have the user data segment
     // the access flag is 0xF2 because it should be present, in ring 3, a segment, executable and read/writeable
     set_gdt_entry(&gdt[3], 0xF2, 0x80);       
+    // then we have the user code segment
+    // the access flag is 0xFA because it should be present, in ring 3, a segment, executable and read and writeable
     set_gdt_entry(&gdt[4], 0xFA, 0xA0);    
+
+    // and then for our 5th and 6th entry we have the tss
+    setup_tss_descriptor()
 }
