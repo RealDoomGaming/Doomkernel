@@ -2,6 +2,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// in order for the new gdt to be abe to get loaded it needs to be a list of gdt structs
+// (Null + kernel code and data + user code and data + tss (takes 2 since its 16bytes))
+gdt_entry gdt[7] __attribute__((aligned(16)));
+
 void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
     entry->limit_low = 0xFFFF; // this doesnt really matter in long mode since it gets ignored
     entry->base_low = 0x00; // the base is also ignored 
@@ -16,11 +20,5 @@ void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
 }
 
 void init_gdt() {
-    // replace this with a list of gdt entries because right now it isnt a contigous block of memory 
-    // like how it should be
-    gdt_entry *null_descriptor = malloc(sizeof(gdt_entry));
-    gdt_entry *kernel_code_seg = malloc(sizeof(gdt_entry));
-    gdt_entry *kernel_data_seg = malloc(sizeof(gdt_entry));
-    gdt_entry *user_data_seg = malloc(sizeof(gdt_entry));
-    gdt_entry *user_code_seg = malloc(sizeof(gdt_entry));
+
 }

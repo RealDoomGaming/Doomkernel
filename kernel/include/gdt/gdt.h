@@ -28,6 +28,18 @@ typedef struct {
     uint16_t iomap_base;    // this is an offset for and I/O Permission Bitmap
 } __attribute__((packed)) tss_entry;
 
+// struct for the a tss entry in the gdt table
+typedef struct {
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t base_middle;
+    uint8_t access_flag;
+    uint8_t granularity;
+    uint8_t base_high;
+    uint32_t base_upper;
+    uint32_t reserved;
+} __attribute__((packed)) tss_gdt_entry;
+
 // struct for when we want to load a new gdt with lgdt later
 struct gdt_pointer {
     uint16_t limit;
