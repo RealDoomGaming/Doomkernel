@@ -6,6 +6,9 @@
 // (Null + kernel code and data + user code and data + tss (takes 2 since its 16bytes))
 gdt_entry gdt[7] __attribute__((aligned(16)));
 
+// the global tss entry
+tss_entry system_tss;
+
 void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
     entry->limit_low = 0xFFFF; // this doesnt really matter in long mode since it gets ignored
     entry->base_low = 0x00; // the base is also ignored 
@@ -19,6 +22,25 @@ void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
     entry->base_high = 0x00;
 }
 
-void init_gdt() {
+void init_gdt(uint64_t kernel_top) {
+    // firstly zero out the area where the tss entry will live
+    memset(&system_tss, 0, sizeof(tss_entry));
+    system_tss.rsp0 = kernel_top;   // we set the rsp0 pointer to the top of the kernel
+    system_tss.iomap_base = sizeof(tss_entry); // and here we disable the io mapping
 
+    // then we need to init the entire gdt array
+    // this is just the null descriptor so we can zero everything out
+    memset(&gdt[0], 0, sizeof(gdt_entry));
+    // then this is the kernel code segment
+    // the access flag is 0x9A because the segment should be present, in rint 0, a segment, executable and read/writeable
+    // and the other flag is 0xA0 because we are in long mode and we wan granularity
+    set_gdt_entry(&gdt[1], 0x9A, 0xA0);    
+    // then we have the kernel data sement
+    // the access flag is 0x92 because the segment should be present, in ring 0, a segment and only read/writeable and not executable
+    // the other flag is 0x80 because it should only be granularity and the long mode bit must be 0 for the data segment
+    set_gdt_entry(&gdt[2], 0x92, 0x80);    
+    // then we have the user data segment
+    // the access flag is 0xF2 because it should be present, in ring 3, a segment, executable and read/writeable
+    set_gdt_entry(&gdt[3], 0xF2, 0x80);       
+    set_gdt_entry(&gdt[4], 0xFA, 0xA0);    
 }
