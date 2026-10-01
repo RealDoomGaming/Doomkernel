@@ -9,6 +9,9 @@ gdt_entry gdt[7] __attribute__((aligned(16)));
 // the global tss entry
 tss_entry system_tss;
 
+// the gdt pointer we need to be able to load the gdt
+gdt_pointer gdtp;
+
 void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
     entry->limit_low = 0xFFFF; // this doesnt really matter in long mode since it gets ignored
     entry->base_low = 0x00; // the base is also ignored 
@@ -70,5 +73,26 @@ void init_gdt(uint64_t kernel_top) {
     set_gdt_entry(&gdt[4], 0xFA, 0xA0);    
 
     // and then for our 5th and 6th entry we have the tss
-    setup_tss_descriptor()
+    // but for the tss we need to make a new tss gdt entry struct
+    tss_gdt_entry *tss_desc = (tss_gdt_entry*)&gdt[5];
+    // then we define the tss base and the tss limit
+    uint64_t tss_base = (uint64_t)&system_tss;
+    uint32_t tss_limit = sizeof(system_tss) - 1;    // the limit of the entire tss is the size - 1 byte
+
+    setup_tss_descriptor(tss_desc, tss_base, tss_limit);
+
+    // lastly we actually need to load it
+    // so before loading it we need to set the pointer of where the gdt is
+    gdtp.limit = sizeof(gdt)-1;
+    gdtp.base = (uint64_t)&gdt;
+
+    // then after setting the pointer we need to call the asm function for loading the gdt
+    // here we pass the pointer to the gdt pointer struct
+    // then we also pass 0x08 which means the kernel code selector since the first sector of the gdt is null
+    // and then finally we ass 0x10 which means the kernel data selector and 0x10 offsets it by 16 byte so it can go to the third segement the kernel data segment
+    load_gdt(&gdtp, 0x08, 0x10)
+
+    // and then after that we need to call the asm function for loading the tss
+    // here we only pass one thing and thats the corresponding number to index 5 in the gdt so it goes to that index
+    load_tss(0x28)
 }

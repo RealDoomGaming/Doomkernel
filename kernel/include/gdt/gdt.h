@@ -41,10 +41,10 @@ typedef struct {
 } __attribute__((packed)) tss_gdt_entry;
 
 // struct for when we want to load a new gdt with lgdt later
-struct gdt_pointer {
+typedef struct {
     uint16_t limit;
     uint64_t base;
-} __attribute__((packed));
+} __attribute__((packed)) gdt_pointer;
 
 void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags);
 void init_gdt();
