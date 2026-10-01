@@ -47,6 +47,6 @@ typedef struct {
 } __attribute__((packed)) gdt_pointer;
 
 void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags);
-void init_gdt();
+void init_gdt(uint64_t);
 
 #endif

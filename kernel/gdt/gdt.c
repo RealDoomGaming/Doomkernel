@@ -1,6 +1,7 @@
 #include <gdt/gdt.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 // in order for the new gdt to be abe to get loaded it needs to be a list of gdt structs
 // (Null + kernel code and data + user code and data + tss (takes 2 since its 16bytes))
@@ -11,6 +12,10 @@ tss_entry system_tss;
 
 // the gdt pointer we need to be able to load the gdt
 gdt_pointer gdtp;
+
+// the two extern asm functions
+extern void load_gdt(gdt_pointer *ptr, uint16_t code_sel, uint16_t data_sel);
+extern void load_tss(uint16_t tss_sel);
 
 void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
     entry->limit_low = 0xFFFF; // this doesnt really matter in long mode since it gets ignored
