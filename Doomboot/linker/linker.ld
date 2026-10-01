@@ -21,5 +21,11 @@ SECTIONS
         bss_end = .;
     }
 
+    /* Reserve 16 KB for the initial kernel stack */
+    . = ALIGN(16);
+    kernel_stack_bottom = .;
+    . += 0x4000; /* 16 KB */
+    kernel_stack_top = .;
+
     kernel_end = .;
 }

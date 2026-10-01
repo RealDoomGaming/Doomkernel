@@ -10,8 +10,10 @@
 #include <timer/pit.h>
 #include <task/task.h>
 #include <fs/fs.h>
+#include <gdt/gdt.h>
 
 extern uint64_t kernel_end;
+extern uint8_t kernel_stack_top;
 
 // in this function we define what happens when we get a breakpoint
 void breakpoint_handler(interrupt_frame_t *frame) {
@@ -45,6 +47,15 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     terminal_init();
     // just a msg
     printf("[terminal] cursors and color set, buffer set to VGA and screen cleared\n");
+
+    // we init the gdt and tss here
+    printf("******GDT & TSS******\n");
+
+    // here we get the kernel stack top
+    uint64_t stack_top_addr = (uint64_t)&kernel_stack_top;
+    // and then we init the gdt and tss stuff
+    init_gdt(stack_top_addr);
+    printf("[gdt & tss] GDT and TSS successfully loaded");
 
     printf("******INTERRUPTS******\n");
 
