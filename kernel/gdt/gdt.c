@@ -90,9 +90,9 @@ void init_gdt(uint64_t kernel_top) {
     // here we pass the pointer to the gdt pointer struct
     // then we also pass 0x08 which means the kernel code selector since the first sector of the gdt is null
     // and then finally we ass 0x10 which means the kernel data selector and 0x10 offsets it by 16 byte so it can go to the third segement the kernel data segment
-    load_gdt(&gdtp, 0x08, 0x10)
+    load_gdt(&gdtp, 0x08, 0x10);
 
     // and then after that we need to call the asm function for loading the tss
     // here we only pass one thing and thats the corresponding number to index 5 in the gdt so it goes to that index
-    load_tss(0x28)
+    load_tss(0x28);
 }
