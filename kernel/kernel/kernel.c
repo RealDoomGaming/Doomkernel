@@ -103,16 +103,6 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     }
     printf("[timer] 300 ticks passed (3 seconds) so the timer is alive!\n");
 
-    
-    printf("******TASKS******\n");
-
-    // here we test our task scheduler by firstly making two tasks
-    printf("[tasks] created two test tasks which print A and B\n");
-    task_create(task_a);
-    task_create(task_b);
-    task_create(task_reaper);
-    scheduler_enable();
-
     printf("******MEMORY******\n");
 
     // then we init the memory
@@ -146,6 +136,15 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     } else {
         printf("[fs] %s file not found\n", query);
     }
+
+    printf("******TASKS******\n");
+
+    // here we test our task scheduler by firstly making two tasks
+    printf("[tasks] created two test tasks which print A and B\n");
+    task_create(task_a);
+    task_create(task_b);
+    task_create(task_reaper);
+    scheduler_enable();
 
     // printing with our custom printf function :DD
     printf("Successfully booted into the kernel!\n");
