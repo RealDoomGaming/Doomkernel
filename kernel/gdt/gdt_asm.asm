@@ -10,12 +10,11 @@ load_gdt:
 
     ;; then we have to reload all data segment registers
     ;; with the 0x10 we gave the load gdt function
-    mov ax, dx              
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+    mov ds, dx
+    mov es, dx
+    mov fs, dx
+    mov gs, dx
+    mov ss, dx
 
     ;; then after doing that we also have to reload cs with a far jump
     push rsi    ;; firstly we push the code selector
@@ -28,6 +27,5 @@ load_gdt:
 
 ;; and this is the label for the tss
 load_tss:
-    mov ax, di      ;; here we firstly load di into ax because in di we have the tss segment (0x28)
-    ltr ax          ;; then we load the tss register
+    ltr di          ;; then we load the tss register
     ret             ;; and return
