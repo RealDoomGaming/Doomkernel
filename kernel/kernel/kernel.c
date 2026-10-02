@@ -55,7 +55,7 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     uint64_t stack_top_addr = (uint64_t)&kernel_stack_top;
     // and then we init the gdt and tss stuff
     init_gdt(stack_top_addr);
-    printf("[gdt & tss] GDT and TSS successfully loaded");
+    printf("[gdt & tss] GDT and TSS successfully loaded\n");
 
     printf("******INTERRUPTS******\n");
 
