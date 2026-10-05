@@ -15,6 +15,7 @@
 extern uint64_t kernel_end;
 extern uint8_t kernel_stack_top;
 extern void enter_user_mode(uint64_t entry_point, uint64_t user_stack, uint16_t user_cs, uint16_t user_ds);
+static uint8_t user_stack[4096] __attribute__((aligned(16)));
 
 // in this function we define what happens when we get a breakpoint
 void breakpoint_handler(interrupt_frame_t *frame) {
@@ -41,6 +42,21 @@ void task_b() {
     }
 
     task_exit();
+}
+
+void user_test_entry() {
+    // this is just a test function which will get executed in ring 3
+
+    // so in here we have a simple variable operation to confirm the user stack works
+    volatile uint64_t counter = 0;
+
+    while (1) {
+        counter++;
+
+        // and after we tested that we can return to ring 0 via triggering a system call
+        __asm__ volatile ("int $0x80");
+        printf("[user mode] going back into ring 0");
+    }
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
@@ -142,10 +158,20 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
 
     // here we test our task scheduler by firstly making two tasks
     printf("[tasks] created two test tasks which print A and B\n");
-    task_create(task_a);
+    /*task_create(task_a);
     task_create(task_b);
-    task_create(task_reaper);
+    task_create(task_reaper);*/
     scheduler_enable();
+
+    printf("******USER MODE******\n");
+    // here we will test our user mode by entering it then testing something and then returning to ring 0
+    // but firstly we need to define some stuff
+    uint16_t user_cs = 0x23;     // this is for the gdt user code segement
+    uint16_t user_ds = 0x1B;     // and this is for the gdt user data segment
+    uint64_t user_sp = (uint64_t)&user_stack[sizeof(user_stack)];   // and this is the end of the user stack
+
+    printf("[user mode] jumping into user space\n");
+    enter_user_mode((uint64_t)user_test_entry, user_sp, user_cs, user_ds);
 
     // printing with our custom printf function :DD
     printf("Successfully booted into the kernel!\n");
