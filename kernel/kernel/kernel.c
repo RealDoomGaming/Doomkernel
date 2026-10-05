@@ -14,6 +14,7 @@
 
 extern uint64_t kernel_end;
 extern uint8_t kernel_stack_top;
+extern void enter_user_mode(uint64_t entry_point, uint64_t user_stack, uint16_t user_cs, uint16_t user_ds);
 
 // in this function we define what happens when we get a breakpoint
 void breakpoint_handler(interrupt_frame_t *frame) {
