@@ -68,11 +68,11 @@ void init_gdt(uint64_t kernel_top) {
     set_gdt_entry(&gdt[1], 0x9A, 0xA0);    
     // then we have the kernel data sement
     // the access flag is 0x92 because the segment should be present, in ring 0, a segment and only read/writeable and not executable
-    // the other flag is 0x80 because it should only be granularity and the long mode bit must be 0 for the data segment
-    set_gdt_entry(&gdt[2], 0x92, 0x80);    
+    // the other flag is 0x00 because we dont need to set it for 64 bit
+    set_gdt_entry(&gdt[2], 0x92, 0x00);    
     // then we have the user data segment
-    // the access flag is 0xF2 because it should be present, in ring 3, a segment, executable and read/writeable
-    set_gdt_entry(&gdt[3], 0xF2, 0x80);       
+    // the access flag is 0xF2 because it should be present, in ring 3, a segment and read/writeable
+    set_gdt_entry(&gdt[3], 0xF2, 0x00);       
     // then we have the user code segment
     // the access flag is 0xFA because it should be present, in ring 3, a segment, executable and read and writeable
     set_gdt_entry(&gdt[4], 0xFA, 0xA0);    

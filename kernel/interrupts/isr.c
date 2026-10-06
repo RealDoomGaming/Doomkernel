@@ -16,12 +16,12 @@ void isr_handler(interrupt_frame_t *frame) {
     // in this we check for exceptions which are truly fatal so we can handle them accordingly
     if (frame->int_no == 8) {
         // if the interupt number is 8 then we have got a double fault which is fatal
-        PANIC("Double Fault Error", frame, __FILE__, __LINE__);
+        PANIC("Double Fault Error", frame);
     }
 
     if (frame->int_no == 13) {
         //if the interupt number is 13 then we have hit a general protection faul
-        PANIC("General Protection Fault", frame, __FILE__, __LINE__);
+        PANIC("General Protection Fault", frame);
     }
 
     if (frame->int_no == 14) {
@@ -34,7 +34,7 @@ void isr_handler(interrupt_frame_t *frame) {
             return;
         }
 
-        PANIC("Page Fault error", frame, __FILE__, __LINE__);
+        PANIC("Page Fault error", frame);
     }
 
     // else if it isnt a really bad error then we check if the handler exists and execute it
@@ -44,7 +44,7 @@ void isr_handler(interrupt_frame_t *frame) {
     }
 
     // else if anything else is the case we probably have an unhandled exception
-    PANIC("Unhandled exception", frame, __FILE__, __LINE__);
+    PANIC("Unhandled exception", frame);
 }
 
 // and then we also have to do the irq handler but it is a lot lot simpler
