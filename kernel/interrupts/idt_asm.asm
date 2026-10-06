@@ -130,6 +130,7 @@ IRQ 15, 47
 isr_common_stub:
     ;; firstly we push all gp registers to the stack preserving the cpu state
     SAVE_CPU
+    cld
     ;; then we put our first argument of the c function we will call later into rdi
     ;; and when we do this we set rdi to the current stack pointer so the c function will get that later
     mov rdi, rsp
