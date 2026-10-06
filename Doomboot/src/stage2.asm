@@ -293,11 +293,12 @@ set_up_paging:
     ;; 1. PDPT_ADDR & PT_ADDR_MASK -> that takes 0x2000 and ANDs it with the mask which results in the low bytes getting stripped of the address (they are reserved for flags, not for address bits)
     ;; 2. PT_PRESENT -> ORs in the bit 0 (value 1) so this becomes present (valid and in use)
     ;; 3. PT_READABLE -> ORs in the bit 1 (value 2) so this becomes readable/writeable
-    mov DWORD [edi], PDPT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
+    ;; 4. PT_USER -> ORs in the bit 1 (value 4) at the second bit so this can be used by ring 3 (user mode)
+    mov DWORD [edi], PDPT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE | PT_USER
 
     ;; then the same pattern repeats for the next two entries too with the only different that we move edi to a new location and we write the values we get from the bitwise operations to the next address of the next table page entry
     mov edi, PDPT_ADDR  ;; we move edi to the starting address of the pdpt
-    mov DWORD [edi], PDT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
+    mov DWORD [edi], PDT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE | PT_USER
 
     ;; we dont need this anymore because our PDT becomes the last thing itself instead of the PT
     ;; mov edi, PDT_ADDR   ;; we move edi to the starting address of pdt

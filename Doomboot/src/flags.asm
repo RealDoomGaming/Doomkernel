@@ -14,10 +14,11 @@ PML4T_ADDR equ 0x1000
 PDPT_ADDR equ 0x2000
 PDT_ADDR equ 0x3000
 PT_ADDR equ 0x4000
-;; these next 3 are bit masks/flags the table entry uses and I think they are self explanetory
+;; these next 4 are bit masks/flags the table entry uses and I think they are self explanetory
 PT_ADDR_MASK equ 0xffffffffff000
 PT_PRESENT equ 1        ;; this one masks the entry as in use or not
 PT_READABLE equ 2
+PT_USER equ 1 << 2
 ;; these next 3 will be used for when we fill up every entry
 ENTRIES_PER_PT equ 512      ;; this is 2MB since each entry has 8 bytes and each table is 4KB
 SIZEOF_PT_ENTRY equ 8       ;; each entry in a 64bit page table is 8 byte
