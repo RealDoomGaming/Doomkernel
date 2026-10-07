@@ -1,7 +1,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "user_code.h"
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
 #include <interrupts/isr.h>
@@ -14,7 +16,15 @@
 
 extern uint64_t kernel_end;
 extern uint8_t kernel_stack_top;
+
+// everything here is for user mode stuff
 extern void enter_user_mode(uint64_t entry_point, uint64_t user_stack, uint16_t user_cs, uint16_t user_ds);
+extern uint8_t __user_text_start[];
+extern uint8_t __user_text_end[];
+
+#define USER_CODE_BASE 0x400000ULL
+#define USER_STACK_TOP 0x800000ULL
+
 
 // in this function we define what happens when we get a breakpoint
 void breakpoint_handler(interrupt_frame_t *frame) {
@@ -43,19 +53,32 @@ void task_b() {
     task_exit();
 }
 
-void user_test_entry() {
-    // this is just a test function which will get executed in ring 3
+static inline uint64_t read_cr3(void)
+{
+    uint64_t v;
+    __asm__ volatile("mov %%cr3, %0" : "=r"(v));
+    return v;
+}
 
-    // so in here we have a simple variable operation to confirm the user stack works
-    volatile uint64_t counter = 0;
+static void print_entry(const char *name, uint64_t e)
+{
+    printf("%s: %x_%x\n", name, (uint32_t)(e >> 32), (uint32_t)(e & 0xFFFFFFFF));
+}
 
-    while (1) {
-        counter++;
+void dump_paging(void)
+{
+    uint64_t cr3 = read_cr3();
 
-        // and after we tested that we can return to ring 0 via triggering a system call
-        __asm__ volatile ("int $0x80");
-        printf("[user mode] going back into ring 0");
-    }
+    uint64_t *pml4 = (uint64_t *)(cr3 & 0x000FFFFFFFFFF000ULL);
+    uint64_t *pdpt = (uint64_t *)(pml4[0] & 0x000FFFFFFFFFF000ULL);
+    uint64_t *pdt  = (uint64_t *)(pdpt[0] & 0x000FFFFFFFFFF000ULL);
+
+    print_entry("CR3   ", cr3);
+    print_entry("PML4[0]", pml4[0]);
+    print_entry("PDPT[0]", pdpt[0]);
+    print_entry("PDT[1] ", pdt[1]);
+    print_entry("PDT[2] ", pdt[2]);
+    print_entry("PDT[3] ", pdt[3]);
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
@@ -167,10 +190,16 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     // but firstly we need to define some stuff
     uint16_t user_cs = 0x23;     // this is for the gdt user code segement
     uint16_t user_ds = 0x1B;     // and this is for the gdt user data segment
-    uint64_t user_sp = (uint64_t)&user_stack[sizeof(user_stack)];   // and this is the end of the user stack
+    
+    uint64_t size = __user_text_end - __user_text_start;    // we get the entire size of the user text
+    uint64_t offset = (uint64_t)user_test_entry - (uint64_t)__user_text_start;  // then we get the offset of the distance between the start of our user text and the test function
+
+    memcpy((void *)USER_CODE_BASE, __user_text_start, size);    // then we copy the memory from the start to end of the user text into the User code base
+
+    dump_paging();
 
     printf("[user mode] jumping into user space\n");
-    enter_user_mode((uint64_t)user_test_entry, user_sp, user_cs, user_ds);
+    enter_user_mode(USER_CODE_BASE + offset, USER_STACK_TOP, user_cs, user_ds); // and try to enter user mode
 
     // printing with our custom printf function :DD
     printf("Successfully booted into the kernel!\n");

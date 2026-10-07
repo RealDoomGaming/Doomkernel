@@ -8,6 +8,13 @@ SECTIONS
     .text : {
         *(.text)
     }
+    .user_text : ALIGN(16) {
+        __user_text_start = .;
+        KEEP(*(.user_text))
+        KEEP(*(.user_text.*))
+        . = ALIGN(16);
+        __user_text_end = .;
+    }
     .rodata : {
         *(.rodata)
     }
