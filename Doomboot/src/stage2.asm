@@ -315,6 +315,18 @@ set_up_paging:
     add edi, SIZEOF_PT_ENTRY ;; here we go to the next page table
     loop .set_entry         ;; then we go to the next entry (loop decrements ecx until is 0 then it wont go back so set_entry)
 
+    mov edi, PDT_ADDR + 2 * SIZEOF_PT_ENTRY     ;; here we move the address of the pdt plus two entries times 8 bytes
+    mov ebx, 0x400000 | PT_PRESENT | PT_READABLE | PT_USER | PT_HUGE    ;; now ebx is the new entry value and 0x400000 is the physically address 2MB page which starts at 4MB
+    mov ecx, 2          ;; and this means our future loop will run exactly twice
+
+.set_user_entry:
+    ;; this is basically the same as the first loop from .set_entry
+    mov DWORD [edi], ebx
+    add ebx, HUGE_PAGE_SIZE
+    add edi, SIZEOF_PT_ENTRY
+    loop .set_user_entry
+    ;; after the second pass ecx hits 0 and the loop will stop
+
     ;; then we can enable PAE using the cr4 of the cpu
     mov eax, cr4            ;; we take the value from cr4 (is a controll register the cpu uses for various process features) into eax
     or eax, CR4_PAE_ENABLE  ;; we only change bit 5 to 1 in the eax and that is why we use OR here

@@ -62,6 +62,9 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
+// this is for the vector 0x80 for going out of ring 3
+extern void isr128();
+
 // then for convinience we need a helper which fills one item before we can insert it
 static void idt_set_item(int vector, uint64_t handler_addr, uint16_t selector, uint8_t type) {
     // this grabs the lowest 16 bytes so this is exactly the offset we want
@@ -128,6 +131,9 @@ void idt_set_items() {
     idt_set_item(45, (uint64_t)irq13, 0x08, 0x8E);
     idt_set_item(46, (uint64_t)irq14, 0x08, 0x8E);
     idt_set_item(47, (uint64_t)irq15, 0x08, 0x8E);
+
+    // this is so we can jump from ring 3 back to ring 0
+    idt_set_item(0x80, (uint64_t)isr128, 0x08, 0xEE);
 }
 
 void idt_init() {
@@ -141,3 +147,4 @@ void idt_init() {
     // we need this here to load the table structure
     idt_flush((uint64_t)&idtr);
 }
+
