@@ -37,6 +37,15 @@ void register_breakpoint_handler() {
     register_interrupt_handler(3, breakpoint_handler);
 }
 
+void syscall_handler(interrupt_frame_t *frame) {
+    (void)frame;
+    printf("[syscall] syscall caught, resumung execution\n");
+}
+
+void register_syscall_handler() {
+    register_interrupt_handler(128, syscall_handler);
+}
+
 // these two functions are for testing the scheduler later
 void task_a() {
     for (int i = 0; i < 20; i++) {
@@ -197,6 +206,7 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     memcpy((void *)USER_CODE_BASE, __user_text_start, size);    // then we copy the memory from the start to end of the user text into the User code base
 
     dump_paging();
+    register_syscall_handler();
 
     printf("[user mode] jumping into user space\n");
     enter_user_mode(USER_CODE_BASE + offset, USER_STACK_TOP, user_cs, user_ds); // and try to enter user mode
