@@ -9,11 +9,18 @@ void user_test_entry() {
     // so in here we have a simple variable operation to confirm the user stack works
     volatile uint64_t counter = 0;
 
-    while (1) {
+    while (counter < 5) {
         counter++;
 
-        // and after we tested that we can return to ring 0 via triggering a system call
-        __asm__ volatile ("int $0x80");
-        printf("[user mode] going back into ring 0");
+        __asm__ volatile (
+            "int $0x80"
+            :
+            : "D" ((uint64_t)counter)
+            : "memory"
+        );
+    }
+
+    for (;;) {
+        __asm__ volatile ("pause");
     }
 }

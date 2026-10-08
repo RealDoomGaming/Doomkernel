@@ -39,7 +39,7 @@ void register_breakpoint_handler() {
 
 void syscall_handler(interrupt_frame_t *frame) {
     (void)frame;
-    printf("[syscall] syscall caught, resumung execution\n");
+    printf("[syscall] test counter from ring 3: %d\n", (int)frame->rdi);
 }
 
 void register_syscall_handler() {
@@ -60,34 +60,6 @@ void task_b() {
     }
 
     task_exit();
-}
-
-static inline uint64_t read_cr3(void)
-{
-    uint64_t v;
-    __asm__ volatile("mov %%cr3, %0" : "=r"(v));
-    return v;
-}
-
-static void print_entry(const char *name, uint64_t e)
-{
-    printf("%s: %x_%x\n", name, (uint32_t)(e >> 32), (uint32_t)(e & 0xFFFFFFFF));
-}
-
-void dump_paging(void)
-{
-    uint64_t cr3 = read_cr3();
-
-    uint64_t *pml4 = (uint64_t *)(cr3 & 0x000FFFFFFFFFF000ULL);
-    uint64_t *pdpt = (uint64_t *)(pml4[0] & 0x000FFFFFFFFFF000ULL);
-    uint64_t *pdt  = (uint64_t *)(pdpt[0] & 0x000FFFFFFFFFF000ULL);
-
-    print_entry("CR3   ", cr3);
-    print_entry("PML4[0]", pml4[0]);
-    print_entry("PDPT[0]", pdpt[0]);
-    print_entry("PDT[1] ", pdt[1]);
-    print_entry("PDT[2] ", pdt[2]);
-    print_entry("PDT[3] ", pdt[3]);
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
@@ -205,7 +177,6 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
 
     memcpy((void *)USER_CODE_BASE, __user_text_start, size);    // then we copy the memory from the start to end of the user text into the User code base
 
-    dump_paging();
     register_syscall_handler();
 
     printf("[user mode] jumping into user space\n");
