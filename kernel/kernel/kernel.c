@@ -62,13 +62,13 @@ void task_b() {
     task_exit();
 }
 
-void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
-    // first thing we do is init the terminal
+void terminal_kernel() {
     terminal_init();
     // just a msg
     printf("[terminal] cursors and color set, buffer set to VGA and screen cleared\n");
+}
 
-    // we init the gdt and tss here
+void gdt_kernel() {
     printf("******GDT & TSS******\n");
 
     // here we get the kernel stack top
@@ -76,10 +76,11 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     // and then we init the gdt and tss stuff
     init_gdt(stack_top_addr);
     printf("[gdt & tss] GDT and TSS successfully loaded\n");
+}
 
+void interrupt_kernel() {
     printf("******INTERRUPTS******\n");
 
-    // here we init the entire interrupt stuff
     idt_init();
     pic_remap(0x20, 0x28);
     __asm__ volatile("sti");
@@ -93,10 +94,11 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     printf("[test] triggering breakpoint\n");
     __asm__ volatile("int3");
     printf("[test] we are still alive (no kernel panic)\n");
+}
 
+void keyboard_kernel() {
     printf("******KEYBOARD******\n");
 
-    // we need to init the keyboard here
     keyboard_init();
     printf("[keyboard] irq1 registered\n");
     // then we also have a test where we stop everything and have the user type something and escape is for exiting this loop
@@ -109,10 +111,11 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
         terminal_put_char(typed);
     } while (typed != 27); // 27 stands for the escape key
     printf("\n");
+}
 
+void timer_kernel() {
     printf("******TIMER******\n");
 
-    // we init the timer here with 100hz
     timer_init(100);
     printf("[timer] timer pit initialized with 100hz\n");
 
@@ -122,20 +125,22 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
         __asm__ volatile("hlt");
     }
     printf("[timer] 300 ticks passed (3 seconds) so the timer is alive!\n");
+}
 
+void memory_kernel(uint64_t mmap_addr, uint64_t mmap_count) {
     printf("******MEMORY******\n");
 
-    // then we init the memory
     printf("[memory] BIOS reported %d usable memory map entries\n", (int64_t)mmap_count);
     // before giving the mmap_addrs to the function we have to convert it
     mmap_entry_t *mmap = (mmap_entry_t *)mmap_addr;
     memory_init((uint64_t)&kernel_end, mmap, mmap_count);
     // also just a msg
     printf("[memory] heap beginning and end was set\n");
+}
 
+void filesystem_kernel(uint64_t initrd_addr) {
     printf("******FILESYSTEM******\n");
 
-    // we init the filesystem here
     fs_init(initrd_addr);
     // then for testing we try to get our file we read when compiling
     char query[32] = "doom.txt";
@@ -156,18 +161,21 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     } else {
         printf("[fs] %s file not found\n", query);
     }
+}
 
+void tasks_kernel() {
     printf("******TASKS******\n");
 
-    // here we test our task scheduler by firstly making two tasks
     printf("[tasks] created two test tasks which print A and B\n");
     /*task_create(task_a);
     task_create(task_b);
     task_create(task_reaper);*/
     scheduler_enable();
+}
 
+void user_mode_kernel() {
     printf("******USER MODE******\n");
-    // here we will test our user mode by entering it then testing something and then returning to ring 0
+
     // but firstly we need to define some stuff
     uint16_t user_cs = 0x23;     // this is for the gdt user code segement
     uint16_t user_ds = 0x1B;     // and this is for the gdt user data segment
@@ -181,6 +189,35 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
 
     printf("[user mode] jumping into user space\n");
     enter_user_mode(USER_CODE_BASE + offset, USER_STACK_TOP, user_cs, user_ds); // and try to enter user mode
+}
+
+void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
+    // first thing we do is init the terminal
+    terminal_kernel();
+
+    // we init the gdt and tss here
+    gdt_kernel();
+
+    // here we init the entire interrupt stuff
+    interrupt_kernel();
+
+    // we need to init the keyboard here
+    keyboard_kernel();
+
+    // we init the timer here with 100hz
+    timer_kernel();    
+
+    // then we init the memory
+    memory_kernel(mmap_addr, mmap_count);
+
+    // we init the filesystem here
+    filesystem_kernel(initrd_addr);
+
+    // here we test our task scheduler by firstly making two tasks
+    tasks_kernel();
+
+    // here we will test our user mode by entering it then testing something and then returning to ring 0
+    user_mode_kernel();
 
     // printing with our custom printf function :DD
     printf("Successfully booted into the kernel!\n");
