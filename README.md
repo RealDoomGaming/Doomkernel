@@ -19,7 +19,7 @@ Doomkernel is my own 64 bit kernel written from scratch which boots using my own
 - [x] Filesystem support
 
 ### Phase 2: User-Space
-- [ ] User-space / switch to user mode (half done, I finished the ring stuff)
+- [x] User-space / switch to user mode
 - [ ] Program loading (dynamic linker)
 - [ ] System calls
 - [ ] OS-specific toolchain
