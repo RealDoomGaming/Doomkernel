@@ -60,6 +60,7 @@ void syscall_handler(interrupt_frame_t *frame) {
             }
 
             // if the pointer is valid we write to the terminal
+            printf("[syscall] ");
             terminal_write(buf, len);
 
             // and then we set the return value to the length of what we wrote
