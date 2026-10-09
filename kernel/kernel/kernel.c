@@ -63,8 +63,14 @@ void syscall_handler(interrupt_frame_t *frame) {
             break;
         case SYS_EXIT:
             // exit syscall
-            printf("[syscall] user programm exited with code: %d\n", (int)frame->rdi)
-            
+            printf("[syscall] user programm exited with code: %d\n", (int)frame->rdi);
+
+            // then we set the frame to be back in the kernel after the programm exited
+            frame->rip = (uint64_t)kernel_stack_top;    // this we set to the top of the kernel stack
+            frame->cs = 0x08;                           // this is the code segment the next code should run on (kernel code)       
+            frame->ss = 0x10;                           // and this is the stack segment
+            frame->rsp = (uint64_t)&kernel_stack_top;   // and this is also a refrence to the kernel stack top
+            frame->rflags = 0x202;                      // and finally this is flags value, 0x2 is always reserved and 0x200 is the interrupt flag
 
             break;
         default:
