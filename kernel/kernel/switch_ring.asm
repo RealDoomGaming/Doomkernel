@@ -1,5 +1,12 @@
 [bits 64]
 global enter_user_mode
+global resume_kernel
+global saved_kernel_rsp
+
+section .bss
+    saved_kernel_rsp: resq 1
+
+section .text
 
 ;; this label is for going from ring 0 to ring 3 with an interrupt
 ;; it takes a few parameters:
@@ -8,7 +15,16 @@ global enter_user_mode
 ;; 3. the user cs (code segement)
 ;; 4. the user ds (data segment)
 enter_user_mode:
-    ;; then firstly we need to load cx into all data segment registers
+    ;; firstly we need to remember where the kernel was
+    push rbx
+    push rbp
+    push r12
+    push r13
+    push r14
+    push r15
+    mov [rel saved_kernel_rsp], rsp
+
+    ;; then we need to load cx into all data segment registers
     ;; because they specify what segement descriptor in the gdt governs data operations
     mov ds, cx
     mov es, cx 
@@ -31,3 +47,19 @@ enter_user_mode:
 
     ;; and then we can perform an interrupt so we jump to ring 3
     iretq
+
+;; iretq will labd here (hopefully) where we will return to the caller of the enter user mode
+resume_kernel:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov gs, ax
+    mov fs, ax
+
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
+    pop rbx
+    ret

@@ -23,6 +23,10 @@ extern void enter_user_mode(uint64_t entry_point, uint64_t user_stack, uint16_t 
 extern uint8_t __user_text_start[];
 extern uint8_t __user_text_end[];
 
+// saving where we jump back into the kernel
+extern uint64_t saved_kernel_rsp;
+extern void resume_kernel();
+
 #define USER_CODE_BASE 0x400000ULL
 #define USER_STACK_TOP 0x800000ULL
 
@@ -66,10 +70,10 @@ void syscall_handler(interrupt_frame_t *frame) {
             printf("[syscall] user programm exited with code: %d\n", (int)frame->rdi);
 
             // then we set the frame to be back in the kernel after the programm exited
-            frame->rip = (uint64_t)kernel_stack_top;    // this we set to the top of the kernel stack
+            frame->rip = (uint64_t)resume_kernel;       // this is the new kernel address after we used the syscall
             frame->cs = 0x08;                           // this is the code segment the next code should run on (kernel code)       
             frame->ss = 0x10;                           // and this is the stack segment
-            frame->rsp = (uint64_t)&kernel_stack_top;   // and this is also a refrence to the kernel stack top
+            frame->rsp = saved_kernel_rsp;   // and this is also a refrence to the kernel stack top
             frame->rflags = 0x202;                      // and finally this is flags value, 0x2 is always reserved and 0x200 is the interrupt flag
 
             break;
@@ -227,6 +231,9 @@ void user_mode_kernel() {
 
     printf("[user mode] jumping into user space\n");
     enter_user_mode(USER_CODE_BASE + offset, USER_STACK_TOP, user_cs, user_ds); // and try to enter user mode
+    printf("[user mode] back from user mode\n");
+
+    return;
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
@@ -258,7 +265,7 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) 
     user_mode_kernel();
 
     // printing with our custom printf function :DD
-    printf("Successfully booted into the kernel!\n");
+    printf("[kernel] Successfully booted into the kernel!\n");
 
     // while loop so the cpu doesnt run off into memory junk
     while (1) {
