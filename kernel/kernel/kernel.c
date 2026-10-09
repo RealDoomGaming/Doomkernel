@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "user_code.h"
+#include "syscall_nums.h"
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
 #include <interrupts/isr.h>
@@ -39,6 +40,39 @@ void register_breakpoint_handler() {
 
 void syscall_handler(interrupt_frame_t *frame) {
     (void)frame;
+
+    int syscall_num = frame->rax;
+
+    switch (syscall_num) {
+        case SYS_WRITE:
+            // write syscall
+            const char *buf = (const char*)frame->rdi;  // the stuff we need to print should be in the rdi register
+            uint64_t len = frame->rsi;                  // and the length of the stuff we need to print should be in the rsi register
+            
+            // then we check if the pointer from the buffer is even in the user region
+            if (buf < 0x400000 || buf > 0x800000) {
+                frame->rax = (uint64_t)-1;
+                break;
+            }
+
+            // if the pointer is valid we write to the terminal
+            terminal_write(buf, len);
+
+            // and then we set the return value to the length of what we wrote
+            frame->rax = len;
+            break;
+        case SYS_EXIT:
+            // exit syscall
+            printf("[syscall] user programm exited with code: %d\n", (int)frame->rdi)
+            
+
+            break;
+        default:
+            // if no number was given then this
+            printf("[syscall] got a syscall, resuming execution");
+            break;
+    }
+
     printf("[syscall] test counter from ring 3: %d\n", (int)frame->rdi);
 }
 
