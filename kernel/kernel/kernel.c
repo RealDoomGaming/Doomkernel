@@ -50,7 +50,7 @@ void syscall_handler(interrupt_frame_t *frame) {
             uint64_t len = frame->rsi;                  // and the length of the stuff we need to print should be in the rsi register
             
             // then we check if the pointer from the buffer is even in the user region
-            if (buf < 0x400000 || buf > 0x800000) {
+            if (frame->rdi < 0x400000 || frame->rsi > 0x800000) {
                 frame->rax = (uint64_t)-1;
                 break;
             }
@@ -78,8 +78,6 @@ void syscall_handler(interrupt_frame_t *frame) {
             printf("[syscall] got a syscall, resuming execution");
             break;
     }
-
-    printf("[syscall] test counter from ring 3: %d\n", (int)frame->rdi);
 }
 
 void register_syscall_handler() {
