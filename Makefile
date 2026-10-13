@@ -37,12 +37,12 @@ KERN_OBJ := $(patsubst kernel/%.c,build/%.o,$(KERN_SRC))
 
 # the architecture specific part of the kernel (tty, ports, gdt, ...) sits one level deeper
 # so it gets its own wildcard, only the arch we build for is picked up
-ARCH_SRC := $(wildcard $(ARCHDIR)/*.c)
+ARCH_SRC := $(wildcard $(ARCHDIR)/*.c) $(wildcard $(ARCHDIR)/*/*.c)
 ARCH_OBJ := $(patsubst kernel/%.c,build/%.o,$(ARCH_SRC))
 
 # the asm parts of the kernel like the isr/irq stubs, assembled to elf64 so they link with the c code
 # same split as above, one wildcard for the generic parts and one for the arch specific ones
-KASM_SRC := $(wildcard kernel/*/*.asm) $(wildcard $(ARCHDIR)/*.asm)
+KASM_SRC := $(wildcard kernel/*/*.asm) $(wildcard $(ARCHDIR)/*.asm) $(wildcard $(ARCHDIR)/*/*.asm)
 KASM_OBJ := $(patsubst kernel/%.asm,build/%.o,$(KASM_SRC))
 
 # the libc is mostly split into one directory per header (stdio/, string/, ...) but files like panic.c
