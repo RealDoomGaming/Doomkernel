@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "user_code.h"
-#include "syscall_nums.h"
+#include <syscalls/syscall.h>
 
 __attribute__((always_inline))
 static inline uint64_t system_call(uint64_t num, uint64_t a, uint64_t b) {

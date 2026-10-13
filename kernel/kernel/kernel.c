@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "user_code.h"
-#include "syscall_nums.h"
+#include <syscalls/syscall.h>
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
 #include <interrupts/isr.h>
@@ -30,7 +30,6 @@ extern void resume_kernel();
 #define USER_CODE_BASE 0x400000ULL
 #define USER_STACK_TOP 0x800000ULL
 
-
 // in this function we define what happens when we get a breakpoint
 void breakpoint_handler(interrupt_frame_t *frame) {
     (void)frame;
@@ -40,49 +39,6 @@ void breakpoint_handler(interrupt_frame_t *frame) {
 // and in this we actually register it
 void register_breakpoint_handler() {
     register_interrupt_handler(3, breakpoint_handler);
-}
-
-void syscall_handler(interrupt_frame_t *frame) {
-    (void)frame;
-
-    int syscall_num = frame->rax;
-
-    switch (syscall_num) {
-        case SYS_WRITE:
-            // write syscall
-            const char *buf = (const char*)frame->rdi;  // the stuff we need to print should be in the rdi register
-            uint64_t len = frame->rsi;                  // and the length of the stuff we need to print should be in the rsi register
-            
-            // then we check if the pointer from the buffer is even in the user region
-            if (frame->rdi < 0x400000 || frame->rsi > 0x800000) {
-                frame->rax = (uint64_t)-1;
-                break;
-            }
-
-            // if the pointer is valid we write to the terminal
-            printf("[syscall] ");
-            terminal_write(buf, len);
-
-            // and then we set the return value to the length of what we wrote
-            frame->rax = len;
-            break;
-        case SYS_EXIT:
-            // exit syscall
-            printf("[syscall] user programm exited with code: %d\n", (int)frame->rdi);
-
-            // then we set the frame to be back in the kernel after the programm exited
-            frame->rip = (uint64_t)resume_kernel;       // this is the new kernel address after we used the syscall
-            frame->cs = 0x08;                           // this is the code segment the next code should run on (kernel code)       
-            frame->ss = 0x10;                           // and this is the stack segment
-            frame->rsp = saved_kernel_rsp;   // and this is also a refrence to the kernel stack top
-            frame->rflags = 0x202;                      // and finally this is flags value, 0x2 is always reserved and 0x200 is the interrupt flag
-
-            break;
-        default:
-            // if no number was given then this
-            printf("[syscall] got a syscall, resuming execution");
-            break;
-    }
 }
 
 void register_syscall_handler() {
@@ -229,6 +185,7 @@ void user_mode_kernel() {
     memcpy((void *)USER_CODE_BASE, __user_text_start, size);    // then we copy the memory from the start to end of the user text into the User code base
 
     register_syscall_handler();
+    syscall_init(saved_kernel_rsp, resume_kernel);
 
     printf("[user mode] jumping into user space\n");
     enter_user_mode(USER_CODE_BASE + offset, USER_STACK_TOP, user_cs, user_ds); // and try to enter user mode
