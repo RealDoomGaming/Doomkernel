@@ -23,9 +23,8 @@ extern void enter_user_mode(uint64_t entry_point, uint64_t user_stack, uint16_t 
 extern uint8_t __user_text_start[];
 extern uint8_t __user_text_end[];
 
-// saving where we jump back into the kernel
-extern uint64_t saved_kernel_rsp;
-extern void resume_kernel();
+// so we know where we should resume our kernel
+extern void resume_kernel(void);
 
 #define USER_CODE_BASE 0x400000ULL
 #define USER_STACK_TOP 0x800000ULL
@@ -39,10 +38,6 @@ void breakpoint_handler(interrupt_frame_t *frame) {
 // and in this we actually register it
 void register_breakpoint_handler() {
     register_interrupt_handler(3, breakpoint_handler);
-}
-
-void register_syscall_handler() {
-    register_interrupt_handler(128, syscall_handler);
 }
 
 // these two functions are for testing the scheduler later
@@ -184,8 +179,7 @@ void user_mode_kernel() {
 
     memcpy((void *)USER_CODE_BASE, __user_text_start, size);    // then we copy the memory from the start to end of the user text into the User code base
 
-    register_syscall_handler();
-    syscall_init(saved_kernel_rsp, resume_kernel);
+    syscall_init(resume_kernel);
 
     printf("[user mode] jumping into user space\n");
     enter_user_mode(USER_CODE_BASE + offset, USER_STACK_TOP, user_cs, user_ds); // and try to enter user mode

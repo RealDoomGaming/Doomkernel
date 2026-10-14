@@ -3,12 +3,13 @@
 #include <stdint.h>
 #include <kernel/tty.h>
 
-uint64_t saved_kernel_rsp;
-void (*resume_kernel)(void);
+extern uint64_t saved_kernel_rsp;
+static void (*resume_kernel_func)(void);
 
-void syscall_init(uint64_t kernel_saved, void (*resume_func)(void))  {
-    saved_kernel_rsp = kernel_saved;
-    resume_kernel = resume_func;
+void syscall_init(void (*resume_func)(void))  {
+    resume_kernel_func = resume_func;
+
+    register_interrupt_handler(128, syscall_handler);
 }
 
 void syscall_handler(interrupt_frame_t *frame) {
@@ -40,7 +41,7 @@ void syscall_handler(interrupt_frame_t *frame) {
             printf("[syscall] user programm exited with code: %d\n", (int)frame->rdi);
 
             // then we set the frame to be back in the kernel after the programm exited
-            frame->rip = (uint64_t)resume_kernel;       // this is the new kernel address after we used the syscall
+            frame->rip = (uint64_t)resume_kernel_func;       // this is the new kernel address after we used the syscall
             frame->cs = 0x08;                           // this is the code segment the next code should run on (kernel code)       
             frame->ss = 0x10;                           // and this is the stack segment
             frame->rsp = saved_kernel_rsp;   // and this is also a refrence to the kernel stack top
