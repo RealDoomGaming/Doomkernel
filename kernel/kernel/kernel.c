@@ -26,9 +26,6 @@ extern uint8_t __user_text_end[];
 // so we know where we should resume our kernel
 extern void resume_kernel(void);
 
-#define USER_CODE_BASE 0x400000ULL
-#define USER_STACK_TOP 0x800000ULL
-
 // in this function we define what happens when we get a breakpoint
 void breakpoint_handler(interrupt_frame_t *frame) {
     (void)frame;

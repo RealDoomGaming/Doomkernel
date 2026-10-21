@@ -24,7 +24,7 @@ void syscall_handler(interrupt_frame_t *frame) {
             uint64_t len = frame->rsi;                  // and the length of the stuff we need to print should be in the rsi register
             
             // then we check if the pointer from the buffer is even in the user region
-            if (frame->rdi < 0x400000 || frame->rsi > 0x800000) {
+            if (frame->rdi < USER_CODE_BASE || frame->rdi >= USER_STACK_TOP || frame->rsi > USER_STACK_TOP - frame->rdi) {
                 frame->rax = (uint64_t)-1;
                 break;
             }
