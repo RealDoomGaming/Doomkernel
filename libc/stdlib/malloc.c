@@ -5,6 +5,7 @@
 
 // this is the maximum that we can map because of the entries we made in the bootloader
 #define MAPPED_LIMIT 0x40000000UL
+#define HEAP_MIN 0x800000UL // this is the minimum because we dont want the heap to grow into user space
 
 uint64_t heap_beginning = 0;;
 uint64_t heap_end = 0;
@@ -14,6 +15,11 @@ uint64_t memory_used = 0;;
 
 void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
     heap_beginning = ALIGN_UP(kernel_end + 0x1000);   // the beginning of the heap is the kernel end with a bit of a buffer between them and we also need to Align the start of the heap
+
+    // this is so the heap doesnt start to low in memory 
+    if (heap_beginning < HEAP_MIN) {
+        heap_beginning = HEAP_MIN;
+    }
 
     // debugging messages
     printf("[memory] kernel end at %x\n", kernel_end);
@@ -37,6 +43,16 @@ void memory_init(uint64_t kernel_end, mmap_entry_t *mmap, uint16_t mmap_count) {
         // here we get where the entry starts and where it ends
         uint64_t entry_start = entry->base_addr;
         uint64_t entry_end = entry_start + entry->length;
+
+        // we check if the entry start is above our mapped limit and if thats the case then we just continue
+        if (entry_start >= MAPPED_LIMIT) {
+            continue;
+        }
+
+        // then we check if the entry end is above our mapped limit and if thats the case we just set it to the mapped limit
+        if (entry_end > MAPPED_LIMIT) {
+            entry_end = MAPPED_LIMIT;
+        }
 
         // then we check if the entry is below our defined heap beginning so this prevents the heap from placing itself in low ram
         if (entry_end <= heap_beginning) {
