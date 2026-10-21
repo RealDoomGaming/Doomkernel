@@ -26,6 +26,9 @@ INITRD_LBA     equ 1 + STAGE2_SECTORS
 ;; same as in the first stage we have an address where the dl is saved so we can access it here in the second stage when loading our second dap
 BOOT_DRIVE_SHARED equ 0x0500
 
+;; this jumps ahead 16 bytes so we dont start at 0x8000 but we start at 0x8010 because that really where our code lies in memory
+jmp start2
+
 ;; we define a second dap here for our file system
 align 4     
 dap:
