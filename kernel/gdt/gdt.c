@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
+/*
 // in order for the new gdt to be abe to get loaded it needs to be a list of gdt structs
 // (Null + kernel code and data + user code and data + tss (takes 2 since its 16bytes))
 gdt_entry gdt[7] __attribute__((aligned(16)));
@@ -100,4 +100,91 @@ void init_gdt(uint64_t kernel_top) {
     // and then after that we need to call the asm function for loading the tss
     // here we only pass one thing and thats the corresponding number to index 5 in the gdt so it goes to that index
     load_tss(0x28);
+}*/
+
+// this is for the gdt entries which will be needed
+static gdt_entry gdt[7] __attribute__((aligned(16)));
+// then we need one tss entry defined here, we only need one because the system also only needs one
+static tss_entry system_tss;
+
+// then we only need 2 asm declarations for loading the gdt and the tss
+extern void load_gdt();
+extern void load_tss();
+
+/*
+This is a table of the access and flags for the gdt entries
+Slot    Hex    Access       Flags
+Kernel code    0x9A         0x0A 
+Kernel data    0x92         0x00
+User data    0xF2           0x00
+User code    0xFA           0x0A
+TSS    0x89    1000 1001    none
+*/
+// then we make a table where all of the access flags are defined
+uint8_t gdt_access_flags[5] = {0x9A, 0x92, 0xF2, 0xFA, 0x89};
+// and make 2 constant variables for the flags
+const uint8_t gdt_flags_code = 0xA; // for code segments
+const uint8_t gdt_flags_data = 0x0; // for data segments
+
+void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
+    // since we only zeroed the gdt entry 0 before we need to zero the current entry too before we do anything
+    memset(entry, 0, sizeof(entry));
+
+    entry->limit_low = 0xFFFF;  // these are all ones so 16 ones
+    entry->base_low = 0x00;
+    entry->base_middle = 0x00;
+    entry->access_flag = access;    // we just copy the access flags from what the function gets
+    entry->granularity = ((flags & 0xF) << 4) | 0xF; // the 0xF is four ones
+    entry->base_high = 0x00;
+}
+
+/*
+// struct for the tss entry
+typedef struct {
+    uint32_t reserved0;     // these are unused 4 bytes
+    // rsp0, 1 and 2 are the privilege Stack pointers for the different rings in the os
+    uint64_t rsp0;          
+    uint64_t rsp1;
+    uint64_t rsp2;
+    uint64_t reserved1;     // these are again unused
+    uint64_t ist[7];        // this is an array for 7 different distinct stack addresses
+    // these next two are also unused bytes
+    uint64_t reserved2;     
+    uint16_t reserved3;
+    uint16_t iomap_base;    // this is an offset for and I/O Permission Bitmap
+} __attribute__((packed)) tss_entry;
+
+*/
+
+void init_gdt(uint64_t) {
+    // before doing anything at all we need to zero out the location where the tss entry and the gdt entries will be
+    memset(&system_tss, 0, sizeof(tss_entry));
+    memset(&gdt[0], 0, sizeof(gdt_entry));
+
+    // in this loop we will set all of the gdt entries
+    uint8_t right_flags = 0;
+    for (int i = 1; i < 6; i++) {
+        if (i == 1 || i == 5) {
+           right_flags = gdt_flags_code;
+        } else {
+            right_flags = gdt_flags_data;
+        }
+
+        set_gdt_entry(&gdt[i], gdt_access_flags[i-1], right_flags);
+    }
+
+    // now we build the tss_entry
+    /*
+    	reserved0 0	0	
+        rsp0	 4	top of kernel
+        rsp1	12	0	
+        rsp2	20	0	
+        reserved1	28	0	
+        ist[0..6]	36–91	
+        reserved2	92	0	
+        reserved3	100	0	
+        iomap_base	102	104 
+    */
+
+    
 }
