@@ -31,7 +31,7 @@ const uint8_t gdt_flags_data = 0x0; // for data segments
 
 void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
     // since we only zeroed the gdt entry 0 before we need to zero the current entry too before we do anything
-    memset(entry, 0, sizeof(entry));
+    memset(entry, 0, sizeof(gdt_entry));
 
     entry->limit_low = 0xFFFF;  // these are all ones so 16 ones
     entry->base_low = 0x00;
