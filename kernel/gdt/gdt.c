@@ -156,13 +156,13 @@ void build_tss_descriptor(tss_gdt_entry *tss_desc, uint64_t tss_base, uint32_t t
     memset(tss_desc, 0, sizeof(tss_gdt_entry));
 
     // then we fill the fields
-    tss_desc->limit_low = tss_limit & 0xFF;
-    tss_desc->base_low = tss_base & 0xFF;
-    tss_desc->base_middle = (tss_base << 16) & 0xF;
-    tss_desc->base_high = (tss_base << 24) & 0xF;
-    tss_desc->base_upper = (tss_base << 32) & 0xFFFF;
+    tss_desc->limit_low = tss_limit & 0xFFFF;
+    tss_desc->base_low = tss_base & 0xFFFF;
+    tss_desc->base_middle = (tss_base >> 16) & 0xFF;
+    tss_desc->base_high = (tss_base >> 24) & 0xFF;
+    tss_desc->base_upper = (tss_base >> 32) & 0xFFFFFFFF;
     tss_desc->access_flag = 0x89;
-    tss_desc->granularity = ;
+    tss_desc->granularity = (tss_limit >> 16) & 0xF;
     tss_desc->reserved = 0;
 }
 
@@ -193,5 +193,12 @@ void init_gdt(uint64_t) {
     uint64_t tss_base = (uint64_t)&system_tss;
     uint32_t tss_limit = sizeof(system_tss) - 1; 
 
+    // we build the tss gdt descriptor here
     build_tss_descriptor(gdt_desc, tss_base, tss_limit);
+
+    // and then we load the gdt
+    load_gdt(&gdt, 0x08, 0x10);
+
+    // after that we can load the tss
+    load_tss(0x28);
 }
