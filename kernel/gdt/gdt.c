@@ -139,22 +139,32 @@ void set_gdt_entry(gdt_entry *entry, uint8_t access, uint8_t flags) {
 }
 
 /*
-// struct for the tss entry
+// struct for the a tss entry in the gdt table
 typedef struct {
-    uint32_t reserved0;     // these are unused 4 bytes
-    // rsp0, 1 and 2 are the privilege Stack pointers for the different rings in the os
-    uint64_t rsp0;          
-    uint64_t rsp1;
-    uint64_t rsp2;
-    uint64_t reserved1;     // these are again unused
-    uint64_t ist[7];        // this is an array for 7 different distinct stack addresses
-    // these next two are also unused bytes
-    uint64_t reserved2;     
-    uint16_t reserved3;
-    uint16_t iomap_base;    // this is an offset for and I/O Permission Bitmap
-} __attribute__((packed)) tss_entry;
-
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t base_middle;
+    uint8_t access_flag;
+    uint8_t granularity;
+    uint8_t base_high;
+    uint32_t base_upper;
+    uint32_t reserved;
+} __attribute__((packed)) tss_gdt_entry;
 */
+void build_tss_descriptor(tss_gdt_entry *tss_desc, uint64_t tss_base, uint32_t tss_limit) {
+    // firstly zero the tss_desc
+    memset(tss_desc, 0, sizeof(tss_gdt_entry));
+
+    // then we fill the fields
+    tss_desc->limit_low = tss_limit & 0xFF;
+    tss_desc->base_low = tss_base & 0xFF;
+    tss_desc->base_middle = (tss_base << 16) & 0xF;
+    tss_desc->base_high = (tss_base << 24) & 0xF;
+    tss_desc->base_upper = (tss_base << 32) & 0xFFFF;
+    tss_desc->access_flag = 0x89;
+    tss_desc->granularity = ;
+    tss_desc->reserved = 0;
+}
 
 void init_gdt(uint64_t) {
     // before doing anything at all we need to zero out the location where the tss entry and the gdt entries will be
@@ -173,18 +183,15 @@ void init_gdt(uint64_t) {
         set_gdt_entry(&gdt[i], gdt_access_flags[i-1], right_flags);
     }
 
-    // now we build the tss_entry
-    /*
-    	reserved0 0	0	
-        rsp0	 4	top of kernel
-        rsp1	12	0	
-        rsp2	20	0	
-        reserved1	28	0	
-        ist[0..6]	36–91	
-        reserved2	92	0	
-        reserved3	100	0	
-        iomap_base	102	104 
-    */
+    // we need to set the rsp0 from the tss entry to the kernel stack top
+    system_tss.rsp0 = kernel_top;
+    // then we also need to set the iomap of the tss to the size of the tss entry
+    system_tss.iomap_base = sizeof(tss_entry);
 
-    
+    // then we need to build the tss descriptor which will live inside the gdt
+    tss_gdt_entry *gdt_desc = (tss_gdt_entry)&gdt[5];
+    uint64_t tss_base = (uint64_t)&system_tss;
+    uint32_t tss_limit = sizeof(system_tss) - 1; 
+
+    build_tss_descriptor(gdt_desc, tss_base, tss_limit);
 }
