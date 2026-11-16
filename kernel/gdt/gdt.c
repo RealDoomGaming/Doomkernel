@@ -106,10 +106,12 @@ void init_gdt(uint64_t kernel_top) {
 static gdt_entry gdt[7] __attribute__((aligned(16)));
 // then we need one tss entry defined here, we only need one because the system also only needs one
 static tss_entry system_tss;
+// pointer to the gdt
+static gdt_pointer gdtp;
 
 // then we only need 2 asm declarations for loading the gdt and the tss
-extern void load_gdt();
-extern void load_tss();
+extern void load_gdt(gdt_pointer *ptr, uint16_t code_sel, uint16_t data_sel);
+extern void load_tss(uint16_t tss_sel);
 
 /*
 This is a table of the access and flags for the gdt entries
@@ -166,7 +168,7 @@ void build_tss_descriptor(tss_gdt_entry *tss_desc, uint64_t tss_base, uint32_t t
     tss_desc->reserved = 0;
 }
 
-void init_gdt(uint64_t) {
+void init_gdt(uint64_t kernel_top) {
     // before doing anything at all we need to zero out the location where the tss entry and the gdt entries will be
     memset(&system_tss, 0, sizeof(tss_entry));
     memset(&gdt[0], 0, sizeof(gdt_entry));
@@ -189,15 +191,19 @@ void init_gdt(uint64_t) {
     system_tss.iomap_base = sizeof(tss_entry);
 
     // then we need to build the tss descriptor which will live inside the gdt
-    tss_gdt_entry *gdt_desc = (tss_gdt_entry)&gdt[5];
+    tss_gdt_entry *gdt_desc = (tss_gdt_entry*)&gdt[5];
     uint64_t tss_base = (uint64_t)&system_tss;
     uint32_t tss_limit = sizeof(system_tss) - 1; 
 
     // we build the tss gdt descriptor here
     build_tss_descriptor(gdt_desc, tss_base, tss_limit);
 
+    // here we build the gdt pointer
+    gdtp.limit = sizeof(gdt)-1;
+    gdtp.base = (uint64_t)&gdt;
+
     // and then we load the gdt
-    load_gdt(&gdt, 0x08, 0x10);
+    load_gdt(&gdtp, 0x08, 0x10);
 
     // after that we can load the tss
     load_tss(0x28);
