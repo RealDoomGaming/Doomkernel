@@ -17,16 +17,16 @@ char *get_interrupt_name(uint64_t int_no) {
     return exception_errors[int_no];
 }
 
-static void make_human_readable() {
-    uint64_t cr2;
+static void make_human_readable(interrupt_frame_t frame) {
+    uint64_t int_err = frame->int_err;
 
-    __asm__ volatile (
+    /*__asm__ volatile (
         "mov %%cr2, %0"
         : "=r" (cr2)
-    );
+    );*/
 
     for (int i = 0; i < 5; i++){
-        uint8_t bit = (cr2 >> i) & 1;
+        uint8_t bit = (int_err >> i) & 1;
         char *meaning;
 
         if (bit == 1) {
@@ -54,12 +54,11 @@ void isr_handler(interrupt_frame_t *frame) {
     }
 
     if (int_no == 14) {
-        make_human_readable();
+        make_human_readable(frame);
 
         PANIC(get_interrupt_name(int_no), frame);
     }
 
-    make_human_readable();
     PANIC("Unhandled Exception Error", frame);
 }
 
