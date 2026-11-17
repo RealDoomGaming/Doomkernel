@@ -71,6 +71,27 @@ extern void irq15();
 // this is for the vector 0x80 for going out of ring 3
 extern void isr128();
 
+// a table for all irs calls
+typedef void (*isr_t)(void);
+static isr_t isr_table[32] = {
+    isr0,  isr1,  isr2,  isr3,
+    isr4,  isr5,  isr6,  isr7,
+    isr8,  isr9,  isr10, isr11,
+    isr12, isr13, isr14, isr15,
+    isr16, isr17, isr18, isr19,
+    isr20, isr21, isr22, isr23,
+    isr24, isr25, isr26, isr27,
+    isr28, isr29, isr30, isr31
+};
+
+// and a table for all the irq calls
+static isr_t irq_table[16] = {
+    irq0,  irq1,  irq2,  irq3,
+    irq4,  irq5,  irq6,  irq7,
+    irq8,  irq9,  irq10, irq11,
+    irq12, irq13, irq14, irq15
+};
+
 // then for convinience we need a helper which fills one item before we can insert it
 static void idt_set_item(int vector, uint64_t handler_addr, uint16_t selector, uint8_t type) {
     // this grabs the lowest 16 bytes so this is exactly the offset we want
@@ -88,55 +109,13 @@ static void idt_set_item(int vector, uint64_t handler_addr, uint16_t selector, u
 
 
 void idt_set_items() {
-    idt_set_item(0,  (uint64_t)isr0,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(1,  (uint64_t)isr1,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(2,  (uint64_t)isr2,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(3,  (uint64_t)isr3,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(4,  (uint64_t)isr4,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(5,  (uint64_t)isr5,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(6,  (uint64_t)isr6,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(7,  (uint64_t)isr7,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(8,  (uint64_t)isr8,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(9,  (uint64_t)isr9,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(10, (uint64_t)isr10, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(11, (uint64_t)isr11, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(12, (uint64_t)isr12, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(13, (uint64_t)isr13, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(14, (uint64_t)isr14, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(15, (uint64_t)isr15, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(16, (uint64_t)isr16, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(17, (uint64_t)isr17, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(18, (uint64_t)isr18, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(19, (uint64_t)isr19, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(20, (uint64_t)isr20, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(21, (uint64_t)isr21, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(22, (uint64_t)isr22, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(23, (uint64_t)isr23, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(24, (uint64_t)isr24, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(25, (uint64_t)isr25, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(26, (uint64_t)isr26, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(27, (uint64_t)isr27, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(28, (uint64_t)isr28, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(29, (uint64_t)isr29, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(30, (uint64_t)isr30, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(31, (uint64_t)isr31, KERNEL_CS, DEFAULT_TYPE);
-
-    idt_set_item(32, (uint64_t)irq0,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(33, (uint64_t)irq1,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(34, (uint64_t)irq2,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(35, (uint64_t)irq3,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(36, (uint64_t)irq4,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(37, (uint64_t)irq5,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(38, (uint64_t)irq6,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(39, (uint64_t)irq7,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(40, (uint64_t)irq8,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(41, (uint64_t)irq9,  KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(42, (uint64_t)irq10, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(43, (uint64_t)irq11, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(44, (uint64_t)irq12, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(45, (uint64_t)irq13, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(46, (uint64_t)irq14, KERNEL_CS, DEFAULT_TYPE);
-    idt_set_item(47, (uint64_t)irq15, KERNEL_CS, DEFAULT_TYPE);
+    // two for loops for setting the isr and irq stuff
+    for (int i = 0; i < 32; i++) {
+        idt_set_item(i, (uint64_t)isr_table[i], KERNEL_CS, DEFAULT_TYPE);
+    }
+    for (int i = 0; i < 16; i++) {
+        idt_set_item(i+32, (uint64_t)irq_table[i], KERNEL_CS, DEFAULT_TYPE);
+    }
 
     // this is so we can jump from ring 3 back to ring 0
     idt_set_item(0x80, (uint64_t)isr128, KERNEL_CS, RING_TYPE);
