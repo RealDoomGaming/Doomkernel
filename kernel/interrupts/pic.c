@@ -65,7 +65,7 @@ void pic_remap(int offset1, int offset2) {
 }
 
 void pic_send_eoi(uint8_t irq) {
-    // this function gets called when a device triggers and interrupt
+    // this function gets called when a device triggers an interrupt
     // and it is needed because we need to send and eoi command else the pci thinks the interrupt is still running and will freeze everything else
     if (irq >= 8) {
         outb(PIC2_COMMAND, PIC_EOI);

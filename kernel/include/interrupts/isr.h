@@ -34,7 +34,7 @@ static char *bit_one[5] = {
 };
 
 // table of all interrupt errors which can occur
-const char *exception_errors[32] = {
+static const char *exception_errors[32] = {
     "Divide-By-Zero Error",
     "Debug",
     "Non-Maskable Interrupt",

@@ -2,6 +2,7 @@
 #include <interrupts/pic.h>
 #include <panic.h>
 #include <stdio.h>
+#include <stdint.h>
 
 /*
 // we have an array of the interrupt handlers
@@ -72,15 +73,15 @@ char *get_interrupt_name(uint64_t int_no) {
     return exception_errors[int_no];
 }
 
-static void make_human_readable(interrupt_frame_t *frame) {
+static void make_human_readable() {
     uint64_t cr2;
 
     __asm__ volatile (
-        "mov %%cr2"
+        "mov %%cr2, %0"
         : "=r" (cr2)
     );
 
-    for (int i = 0; i++; i < 5){
+    for (int i = 0; i < 5; i++){
         uint8_t bit = (cr2 >> i) & 1;
         char *meaning;
 
@@ -99,7 +100,7 @@ void isr_handler(interrupt_frame_t *frame) {
 
     // handle every interrupt number code
     if (int_no == 8) {
-        PANIC(get_interrupt_name(int_no) + " Error", frame);
+        PANIC(get_interrupt_name(int_no), frame);
     }
 
     // if a handler exists then we call it and return
@@ -109,11 +110,24 @@ void isr_handler(interrupt_frame_t *frame) {
     }
 
     if (int_no == 14) {
-        make_human_readable(frame);
+        make_human_readable();
 
-        PANIC(get_interrupt_name(int_no) + " Error", frame);
+        PANIC(get_interrupt_name(int_no), frame);
     }
 
-    make_human_readable(frame);
+    make_human_readable();
     PANIC("Unhandled Exception Error", frame);
+}
+
+void irq_handler(interrupt_frame_t *frame) {
+    uint64_t int_no = frame->int_no;
+
+    // if we have an interrupt registered we can call it
+    if (interrupt_handlers[int_no]) {
+        interrupt_handlers[int_no](frame);
+        return;
+    }
+
+    // here we call this (look in pic.c for futher documentations)
+    pic_send_eoi((uint8_t) int_no-32);
 }
