@@ -17,8 +17,8 @@ char *get_interrupt_name(uint64_t int_no) {
     return exception_errors[int_no];
 }
 
-static void make_human_readable(interrupt_frame_t frame) {
-    uint64_t int_err = frame->int_err;
+static void make_human_readable(interrupt_frame_t *frame) {
+    uint64_t int_err = frame->err_code;
 
     /*__asm__ volatile (
         "mov %%cr2, %0"
