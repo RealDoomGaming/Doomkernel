@@ -77,7 +77,7 @@ void init_gdt(uint64_t kernel_top) {
     // in this loop we will set all of the gdt entries
     uint8_t right_flags = 0;
     for (int i = 1; i < 6; i++) {
-        if (i == 1 || i == 5) {
+        if (i == 1 || i == 4) {
            right_flags = gdt_flags_code;
         } else {
             right_flags = gdt_flags_data;
