@@ -15,6 +15,10 @@
 #include <fs/fs.h>
 #include <gdt/gdt.h>
 
+static const uint8_t USER_DS = 0x1B;
+static const uint8_t USER_CS = 0x23;
+static const uint8_t TSS_SEL = 0x28;
+
 extern uint64_t kernel_end;
 extern uint8_t kernel_stack_top;
 
@@ -73,7 +77,7 @@ void interrupt_kernel() {
     printf("******INTERRUPTS******\n");
 
     idt_init();
-    pic_remap(0x20, 0x28);
+    pic_remap(0x20, TSS_SEL);
     __asm__ volatile("sti");
     // also just a msg
     printf("[interrupts] IDT loaded, PIC remapped, interrupts enabled\n");
@@ -168,8 +172,8 @@ void user_mode_kernel() {
     printf("******USER MODE******\n");
 
     // but firstly we need to define some stuff
-    uint16_t user_cs = 0x23;     // this is for the gdt user code segement
-    uint16_t user_ds = 0x1B;     // and this is for the gdt user data segment
+    uint16_t user_cs = USER_CS;     // this is for the gdt user code segement
+    uint16_t user_ds = USER_DS;     // and this is for the gdt user data segment
     
     uint64_t size = __user_text_end - __user_text_start;    // we get the entire size of the user text
     uint64_t offset = (uint64_t)user_test_entry - (uint64_t)__user_text_start;  // then we get the offset of the distance between the start of our user text and the test function

@@ -1,10 +1,10 @@
 #include <interrupts/idt.h>
 
 // this is the variable to store KERNEL_CS so we dont have to write KERNEL_CS everywhere
-static const int KERNEL_CS = 0x08;
+static const uint8_t KERNEL_CS = 0x08;
 // these are the types for the isrs and irqs
-static const int DEFAULT_TYPE = 0x8E;
-static const int RING_TYPE = 0xEE;
+static const uint8_t DEFAULT_TYPE = 0x8E;
+static const uint8_t RING_TYPE = 0xEE;
 
 // here will be the actuall code for initing the idt
 // and we start with a 256 long array of the idt struct we made before

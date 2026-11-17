@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <kernel/tty.h>
 
+static const uint8_t KERNEL_CS = 0x08;
+static const uint8_t KERNEL_DS = 0x10;
+
 extern uint64_t saved_kernel_rsp;
 static void (*resume_kernel_func)(void);
 
@@ -42,8 +45,8 @@ void syscall_handler(interrupt_frame_t *frame) {
 
             // then we set the frame to be back in the kernel after the programm exited
             frame->rip = (uint64_t)resume_kernel_func;       // this is the new kernel address after we used the syscall
-            frame->cs = 0x08;                           // this is the code segment the next code should run on (kernel code)       
-            frame->ss = 0x10;                           // and this is the stack segment
+            frame->cs = KERNEL_CS;                           // this is the code segment the next code should run on (kernel code)       
+            frame->ss = KERNEL_DS;                           // and this is the stack segment
             frame->rsp = saved_kernel_rsp;   // and this is also a refrence to the kernel stack top
             frame->rflags = 0x202;                      // and finally this is flags value, 0x2 is always reserved and 0x200 is the interrupt flag
 
