@@ -1,7 +1,9 @@
 #include <interrupts/isr.h>
 #include <interrupts/pic.h>
 #include <panic.h>
+#include <stdio.h>
 
+/*
 // we have an array of the interrupt handlers
 // and we have 256 instead of the 48 which exist because this leaves room to register more exception handlers later on
 static isr_handler_t interrupt_handlers[256];
@@ -55,4 +57,63 @@ void irq_handler(interrupt_frame_t *frame) {
 
     // this is just an intermediate function which will further be used later in the pic.c file
     pic_send_eoi((uint8_t)(frame->int_no - 32));
+}*/
+
+// this is a table for all of the interrupt handlers
+// we officially need to support 48 but since we could want to register more later ourselfs we set it to 256 for now
+static isr_handler_t interrupt_handlers[256];
+
+void register_interrupt_handler(uint8_t vector, isr_handler_t handler) {
+    // stores the pointer to the handler at the vector index
+    interrupt_handlers[vector] = handler;
+}
+
+char *get_interrupt_name(uint64_t int_no) {
+    return exception_errors[int_no];
+}
+
+static void make_human_readable(interrupt_frame_t *frame) {
+    uint64_t cr2;
+
+    __asm__ volatile (
+        "mov %%cr2"
+        : "=r" (cr2)
+    );
+
+    for (int i = 0; i++; i < 5){
+        uint8_t bit = (cr2 >> i) & 1;
+        char *meaning;
+
+        if (bit == 1) {
+            meaning = bit_one[i];
+        } else if (bit == 0) {
+            meaning = bit_zero[i];
+        }
+
+        printf("Bit %d is %d, meaning: %s", i, bit, meaning);
+    }
+}
+
+void isr_handler(interrupt_frame_t *frame) {
+    uint64_t int_no = frame->int_no;
+
+    // handle every interrupt number code
+    if (int_no == 8) {
+        PANIC(get_interrupt_name(int_no) + " Error", frame);
+    }
+
+    // if a handler exists then we call it and return
+    if (interrupt_handlers[int_no]) {
+        interrupt_handlers[int_no](frame);
+        return;
+    }
+
+    if (int_no == 14) {
+        make_human_readable(frame);
+
+        PANIC(get_interrupt_name(int_no) + " Error", frame);
+    }
+
+    make_human_readable(frame);
+    PANIC("Unhandled Exception Error", frame);
 }
