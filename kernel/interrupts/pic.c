@@ -98,7 +98,7 @@ void io_wait() {
     outb(0x80, 0)
 }
 
-void pic_remap(int, int) {
+void pic_remap(uint8_t offset1, uint8_t offset2) {
     // master
     uint8_t mask1 = inb(PIC1_DATA);
     // slave
@@ -118,12 +118,10 @@ void pic_remap(int, int) {
 
     // then we need to give them the vector offset
     // first for the master chip
-    uint8_t offset1 = 0x20;
     outb(PIC1_DATA, offset1);
     io_wait();
 
     // then for the slave chip
-    uint8_t offset2 = 0x28;
     outb(PIC2_DATA, offset2);
     io_wait();
 
@@ -148,8 +146,14 @@ void pic_remap(int, int) {
     outb(PIC2_DATA, mask2);
 }
 
-void pic_send_eoi(uint8_t) {
+void pic_send_eoi(uint8_t irq) {
+    // if the irq is greater then 8 then we send the command to pic2
+    if (irq >= 8) {
+        outb(PIC2_COMMAND, PIC_EOI);
+    }
 
+    // we always send it to the pic1
+    outb(PIC1_COMMAND, PIC_EOI);
 }          
 
 void pic_set_mask(uint8_t) {
