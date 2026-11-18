@@ -105,3 +105,15 @@ void pic_clear_mask(uint8_t irq) {
 
     outb(port, value);
 }
+
+void pic_is_spurious(uint8_t irq) {
+    // only irq 7 and 15 can be spurious
+    if (irq != 7 && irq != 15) {
+        return 0;
+    }
+
+    uint8_t port = irq == 7 ? PIC1_COMMAND : PIC2_COMMAND;
+    outb(port, 0x0B);
+
+    uint8_t value = inb(port);
+}
