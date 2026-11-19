@@ -63,6 +63,12 @@ void isr_handler(interrupt_frame_t *frame) {
 }
 
 void irq_handler(interrupt_frame_t *frame) {
+    uint8_t irq_number = frame->int_no - 32;
+
+    if (pic_is_spurious(irq_number) == 1) {
+        return;
+    }
+
     uint64_t int_no = frame->int_no;
 
     // if we have an interrupt registered we can call it
@@ -71,5 +77,5 @@ void irq_handler(interrupt_frame_t *frame) {
     }
 
     // here we call this (look in pic.c for futher documentations)
-    pic_send_eoi((uint8_t) int_no-32);
+    pic_send_eoi((uint8_t) irq_number);
 }

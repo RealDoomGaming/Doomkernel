@@ -106,7 +106,7 @@ void pic_clear_mask(uint8_t irq) {
     outb(port, value);
 }
 
-void pic_is_spurious(uint8_t irq) {
+uint8_t pic_is_spurious(uint8_t irq) {
     // only irq 7 and 15 can be spurious
     if (irq != 7 && irq != 15) {
         return 0;
@@ -116,4 +116,20 @@ void pic_is_spurious(uint8_t irq) {
     outb(port, 0x0B);
 
     uint8_t value = inb(port);
+
+    // testing the bit
+    uint8_t bit = (value >> 7) & 1;
+
+    if (bit == 1) {
+        // if bit 7 is set then the irq is real so we can return 0
+        return 0;
+    }
+
+    // else if it the irq was 15
+    if (irq == 15) {
+        outb(PIC1_COMMAND, PIC_EOI);
+    }
+
+    // lastly return 1
+    return 1;
 }
