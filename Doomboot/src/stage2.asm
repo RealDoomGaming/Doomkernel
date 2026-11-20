@@ -121,10 +121,49 @@ framebugger:
     jne .vbe_fail
     cmp dword [es:4], 0x0200    ;; we need to set the version, so we set it to atleast 2.0
 
+.vbe_loop
     ;; this is for the mode list
-    mov si, [es:0x0E]              ; offset part
-    mov ax, [es:0x10]              ; segment part
-    mov fs, ax                     ; FS => segment of the mode list
+    mov si, [es:0x0E]              ;; offset part
+    mov ax, [es:0x10]              ;; segment part
+    mov fs, ax                     ;; FS => segment of the mode list
+
+    mov cx, [fs:si]                 ;; move the mode number into cx
+    cmp cx, 0xFFFF
+    je .set_mode
+
+    ;; add 2 to the si register
+    add si, 2
+
+    ;; then when we have the mode number in cx
+    mov as, 0x3000
+    mov es, ax              ;; we have to set the offset every time we cant assume that it survived
+    mov di, 0x0200          ;; then we put the mode into the buffer
+    mov av, 0x4F01
+    ;; and cx already holds the whole number
+    int 0x10                ;; so we call the function
+    cmp ax, 0x004F          
+    jne .vbe_loop
+
+    mov ax, [es:0x00]       ;; we move the attributes into ax
+    and ax, 0x91            ;; then we set bit 7, 4 and 0
+    cmp ax, 0x91
+    jne .vbe_loop
+    cmp byte [es:0x19], 32         ;; the bits per pixel
+    jne .vbe_loop
+    cmp word [es:0x12], 1024       ;; the width
+    jne .vbe_loop
+    cmp word [es:0x14], 768        ;; the height
+    jne .vbe_loop
+
+    jmp .vbe_loop
+
+.set_mode:
+    mov bx, []          ;; we mov into bx what mode we chose
+    or  bx, 0x4000      ;; this is the linear framebuffer bit
+    mov ax, 0x4F02     
+    int 0x10
+    cmp ax, 0x004F
+    jne .vbe_fail
 
 initrd_error:
     ;; this label is just an inifite loop, might add a print later
