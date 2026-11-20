@@ -121,9 +121,10 @@ framebugger:
     jne .vbe_fail
     cmp dword [es:4], 0x0200    ;; we need to set the version, so we set it to atleast 2.0
 
+    ;; this is for the mode list
     mov si, [es:0x0E]              ; offset part
     mov ax, [es:0x10]              ; segment part
-    mov fs, ax                     ; FS = segment of the mode list
+    mov fs, ax                     ; FS => segment of the mode list
 
 initrd_error:
     ;; this label is just an inifite loop, might add a print later
