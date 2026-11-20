@@ -1,9 +1,10 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <interrupts/isr.h>
 #include <keyboard/keyboard.h>
 #include <io/ports.h>
 #include <interrupts/pic.h>
-#include <scancodes.h>
+#include "scancodes.h"
 
 // here we define a buffer for the keycache
 #define KBD_BUFFER_SIZE 256
@@ -16,25 +17,9 @@ static uint8_t kbd_shift;
 static uint8_t kbd_caps;
 static uint8_t kbd_extended;
 
-// then we make a table for the ascii lookup table
-static const char scancode_ascii[] = {
-    0,   27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
-  '\t', 'q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', '[', ']', '\n',
-     0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
-     0, '\\', 'y', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,
-   '*',   0, ' '
-};
-// same table but this one will be used when shift is pressed
-static const char scancode_ascii_shift[] = {
-    0,   27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b',
-  '\t', 'Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P', '{', '}', '\n',
-     0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',
-     0, '|', 'Y', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0,
-   '*',   0, ' '
-};
 
 static char keycode_to_char(uint8_t scancode) {
-  
+  return kbd_shift ? scancode_map[scancode].shifted : scancode_map[scancode].normal;
 }
 
 static void kbd_buffer_push(uint8_t key) {
@@ -87,11 +72,11 @@ void keyboard_handler(interrupt_frame_t *__frame) {
   }
 
   // if the scancode we got is bigger than the table we have we just return
-  if (scancode > sizeof(scancode_ascii)) {
+  if (scancode > SCANCODE_COUNT) {
     return;
   }
 
-  char key = kbd_shift ? scancode_ascii_shift[scancode] : scancode_ascii[scancode];
+  char key = keycode_to_char(scancode);
 
   // if what we got is 0 then that means that we dont have a character to print
   if (key == 0) {
@@ -100,10 +85,11 @@ void keyboard_handler(interrupt_frame_t *__frame) {
 
   // then if caps lock is set we basically just invert everything
   if (kbd_caps) {
+    // we do + and - 32 to reach the other character in hex
     if (key >= 'a' && key <= 'z') {
-      key = scancode_ascii_shift[scancode];
+      key -= 32;
     } else {
-      key = scancode_ascii[scancode];
+      key += 32;
     }
   }
   

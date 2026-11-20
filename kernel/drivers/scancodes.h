@@ -5,7 +5,7 @@
 
 #define SCANCODE_COUNT 0x3A
 
-static const key_entry_t scancode_map[SCANCODE_COUNT] = {
+static const dic_scancodes scancode_map[SCANCODE_COUNT] = {
     [0x00] = { 0,    0    },   // unused
     [0x01] = { 27,   27   },   // escape
     [0x02] = { '1',  '!'  },   // 1
