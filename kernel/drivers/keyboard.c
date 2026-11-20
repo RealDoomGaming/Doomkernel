@@ -8,9 +8,9 @@
 #define KBD_BUFFER_SIZE 256
 
 // these are some variables we will need everywhere later on so we define them here
-volatile static uint8_t keycache[KBD_BUFFER_SIZE];
-volatile static uint16_t kbd_head;
-volatile static uint16_t kbd_tail;
+static volatile uint8_t keycache[KBD_BUFFER_SIZE];
+static volatile uint16_t kbd_head;
+static volatile uint16_t kbd_tail;
 static uint8_t kbd_shift;
 static uint8_t kbd_caps;
 static uint8_t kbd_extended;
@@ -46,28 +46,12 @@ static void kbd_buffer_push(uint8_t key) {
   kbd_head = next;
 }
 
-
-void keyboard_init() {
-  // firstly we reset all our global variables
-  kbd_head = 0;
-  kbd_tail = 0;
-  kbd_caps = 0;
-  kbd_shift = 0;
-  kbd_extended = 0;
-
-  // then we register the interrupt to 33 (0x20)
-  register_interrupt_handler(33, keyboard_handler);
-
-  // then we have to unmask
-  pic_clear_mask(1);
-}
-
-void keyboard_handler(interrupt_frame_t *frame) {
+void keyboard_handler(interrupt_frame_t *__frame) {
   // this is the scancode of the keyboard input
   uint8_t scancode = inb(0x60);
 
   // if the scancode is 0xE0 then we know that the next scancode belongs to an extended key so we do nothing with it
-  if (scancode = 0xE0) {
+  if (scancode == 0xE0) {
     // and we also set kbd
     kbd_extended = 1;
     return;
@@ -78,21 +62,16 @@ void keyboard_handler(interrupt_frame_t *frame) {
   // and the bottom 7 bit here, this say which key it actually is (we dont need it but imma just have it stand here)
   // uint8_t bottom_bit = scancode & 0x7F;
 
-  if (scancode == 2A || scancode == 36) {
-    // if the most significant bit was set then we know we let a key go
-    if (top_bit) {
-      // and we can set shift to false
-      kbd_shift = 0;
-      return;
-    }
-
+  if (scancode == 0x2A || scancode == 0x36) {
     // if we press left or rigt shift then we set the shift to on
-    kbd_shift = 1
+    kbd_shift = 1;
     return;
-  }
-
-  if (scancode == 3A) {
-    // if the caps lock got pressed we automatically put it to whatever it isnt so we can turn it of and on
+  } else if (scancode == 0xAA || scancode == 0xB6) {
+    // if we realease left or right shift then we set it to 0
+    kbd_shift = 0;
+    return;
+  } else if (scancode == 0x3A) {
+    // for toggeling caps lock
     kbd_caps = !kbd_caps;
     return;
   }
@@ -124,6 +103,21 @@ void keyboard_handler(interrupt_frame_t *frame) {
   }
   
   kbd_buffer_push((uint8_t) key);
+}
+
+void keyboard_init() {
+  // firstly we reset all our global variables
+  kbd_head = 0;
+  kbd_tail = 0;
+  kbd_caps = 0;
+  kbd_shift = 0;
+  kbd_extended = 0;
+
+  // then we register the interrupt to 33 (0x20)
+  register_interrupt_handler(33, keyboard_handler);
+
+  // then we have to unmask
+  pic_clear_mask(1);
 }
 
 char keyboard_get_key() {
