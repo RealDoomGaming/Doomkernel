@@ -8,9 +8,9 @@
 #define KBD_BUFFER_SIZE 256
 
 // these are some variables we will need everywhere later on so we define them here
-static uint8_t keycache[KBD_BUFFER_SIZE];
-static uint16_t kbd_head;
-static uint16_t kbd_tail;
+volatile static uint8_t keycache[KBD_BUFFER_SIZE];
+volatile static uint16_t kbd_head;
+volatile static uint16_t kbd_tail;
 static uint8_t kbd_shift;
 static uint8_t kbd_caps;
 static uint8_t __kbd_enabled;
@@ -31,7 +31,7 @@ static const char scancode_ascii_shift[] = {
      0, '|', 'Y', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0,
    '*',   0, ' '
 };
-
+/*
 void kbd_buffer_push(char character) {
   // this function is for pushing character we get from when a key is pressed to our buffer
   // firstly we push the character to wherever kbd_head is pointing
@@ -142,4 +142,34 @@ char keyboard_get_key() {
 int keyboard_has_key() {
   // we also want a function for checking if the buffer already has a key
   return kbd_tail != kbd_head;
+}*/
+
+static void kbd_buffer_push(uint8_t key) {
+  // we firstly calculate the next index in the buffer
+  uint16_t next = (kbd_head + 1) & (KBD_BUFFER_SIZE - 1);
+
+  // then we check if the array is already full
+  if (next == kbd_tail) {
+    return;
+  }
+
+  // then if we know the array isnt full we can store the key
+  keycache[kbd_head] = key;
+  kbd_head = next;
+}
+
+void keyboard_init() {
+
+}
+
+void keyboard_handler(interrupt_frame_t *frame) {
+
+}
+
+char keyboard_get_key() {
+
+}
+
+int keyboard_has_key() {
+
 }
