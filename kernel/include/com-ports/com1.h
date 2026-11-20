@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 // what the port of the com1 port is
-#define PORT 0x3f8
+#define COM1_PORT 0x3f8
 
 uint8_t init_com1();
 

@@ -14,7 +14,7 @@
 #include <task/task.h>
 #include <fs/fs.h>
 #include <gdt/gdt.h>
-#include <com1/com1.h>
+#include <com-ports/com1.h>
 
 static const uint8_t USER_DS = 0x1B;
 static const uint8_t USER_CS = 0x23;
@@ -190,11 +190,15 @@ void user_mode_kernel() {
     return;
 }
 
+uint8_t enable_com1() {
+    printf("******INIT COM1******\n");
+
+    init_com1();
+}
+
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
     // for initing the com1
-    if(!init_com1()) {
-        return;
-    }
+    enable_com1();
 
     // first thing we do is init the terminal
     terminal_kernel();
