@@ -49,7 +49,10 @@ start2:
     mov ah, 0x42            
     mov dl, [BOOT_DRIVE_SHARED]
     int 0x13                
-    jc initrd_error           
+    jc initrd_error   
+
+    ;; before we do the lgdt we have to detect our framebuffer for future printing
+    jmp framebuffer        
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
@@ -102,6 +105,8 @@ detect_memory:
     mov [mmap_entry_count], bp      ;; this stores the amount of entries which lies in bp in our own count
     popa                            ;; then we restore the registers we pushed from the stack
     ret                             ;; and simply return
+
+framebugger:
 
 
 initrd_error:
