@@ -116,7 +116,14 @@ framebugger:
     cmp ax, 0x004F      ;; we check if it failed or not
     jne .vbe_fail   
 
+.answer:
+    cmp dword [es:0], 'VESA'    ;; the bios overwrote the old signature 
+    jne .vbe_fail
+    cmp dword [es:4], 0x0200    ;; we need to set the version, so we set it to atleast 2.0
 
+    mov si, [es:0x0E]              ; offset part
+    mov ax, [es:0x10]              ; segment part
+    mov fs, ax                     ; FS = segment of the mode list
 
 initrd_error:
     ;; this label is just an inifite loop, might add a print later
