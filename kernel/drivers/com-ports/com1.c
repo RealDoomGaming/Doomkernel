@@ -5,6 +5,34 @@
 
 uint8_t is_serial_available = 0;
 
+
+uint8_t com1_received() {
+    // this returns any input that we might receive
+    return inb(COM1_PORT + 5) & 1;
+}
+
+uint8_t read_com1() {
+    while (com1_received() == 0) {
+        // do nothing just wait
+    };
+
+    // if we got input return it
+    return inb(COM1_PORT);
+} 
+
+uint8_t transmit_empty() {
+    // this just returns if there is any data we might want to send
+    return inb(COM1_PORT + 5) & 0x20;
+}
+
+void write_com1(uint8_t value) {
+    while (transmit_empty() == 0) {
+        // do nothing just wait
+    }
+
+    outb(COM1_PORT, value);
+}
+
 void write_string(const char *str) {
     // this function is for writing a string one byte at a time to the com1
 
@@ -58,31 +86,4 @@ uint8_t init_com1() {
     // which means not loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled
     outb(COM1_PORT + 4, 0x0F);
     return 0;
-}
-
-uint8_t com1_received() {
-    // this returns any input that we might receive
-    return inb(COM1_PORT + 5) & 1;
-}
-
-uint8_t read_com1() {
-    while (com1_received() == 0) {
-        // do nothing just wait
-    };
-
-    // if we got input return it
-    return inb(COM1_PORT);
-} 
-
-uint8_t transmit_empty() {
-    // this just returns if there is any data we might want to send
-    return inb(COM1_PORT + 5) & 0x20;
-}
-
-void write_com1(uint8_t value) {
-    while (transmit_empty() == 0) {
-        // do nothing just wait
-    }
-
-    outb(COM1_PORT, value);
 }

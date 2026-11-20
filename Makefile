@@ -32,7 +32,7 @@ INCDIR := $(BOOTDIR)/src/
 
 # every c file one level under kernel/ is part of the kernel, that covers kernel/kernel/, kernel/interrupts/,
 # kernel/drivers/ and any directory we add later so dropping a new file in needs no change down here
-KERN_SRC := $(wildcard kernel/*/*.c)
+KERN_SRC := $(filter-out kernel/arch/%,$(wildcard kernel/*/*.c) $(wildcard kernel/*/*/*.c))
 KERN_OBJ := $(patsubst kernel/%.c,build/%.o,$(KERN_SRC))
 
 # the architecture specific part of the kernel (tty, ports, gdt, ...) sits one level deeper
