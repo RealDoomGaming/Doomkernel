@@ -107,6 +107,15 @@ detect_memory:
     ret                             ;; and simply return
 
 framebugger:
+    mov ax, 0x3000      ;; our address where we want to write
+    mov es, ax          ;; es now points to the address 0x3000
+    xor di, di          ;; this zeros di
+    mov dword [es:di], 'VBE2'   ;; this writes 4 bytes VBE2 at the address 0x3000
+    mov ax, 0x4F00      ;; then we put the function number we want to call in ax
+    int 0x10            ;; then we call the function
+    cmp ax, 0x004F      ;; we check if it failed or not
+    jne .vbe_fail   
+
 
 
 initrd_error:
