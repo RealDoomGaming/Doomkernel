@@ -50,13 +50,13 @@ uint8_t init_com1() {
     // here we check is the serial is faulty
     if (inb(PORT + 0) != 0xAE) {
         is_serial_available = 1;
-        return 1;
+        return 0;
     }
 
     // then if the serial is not faulty we can set it to normal operation mode
     // which means not loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled
     outb(PORT + 4, 0x0F);
-    return 0;
+    return 1;
 }
 
 uint8_t com1_received() {
