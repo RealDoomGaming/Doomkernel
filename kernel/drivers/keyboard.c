@@ -230,9 +230,23 @@ void keyboard_handler(interrupt_frame_t *frame) {
 }
 
 char keyboard_get_key() {
-  
+  // this function basically just waits until we get a key and then returns it
+
+  // firstly we have to wait for key
+  while (kbd_head == kbd_tail) {
+    __asm__ volatile ("hlt");
+  }
+
+  // we get our character form the buffer
+  char character = (char)keycache[kbd_tail];
+  // then we have to advance the kbd tail by one
+  kbd_tail = (kbd_tail + 1) & (KBD_BUFFER_SIZE - 1);
+
+  // then lastly we can return our character
+  return character;
 }
 
 int keyboard_has_key() {
-
+  // this function just checks if kbd_head and kbd_tail differ from eachother
+  return kbd_head - kbd_tail;
 }
