@@ -177,8 +177,8 @@ void keyboard_handler(interrupt_frame_t *frame) {
 
   // we get the top bit here, this controls whatever the next key is treated as extended or not
   uint8_t top_bit = scancode & 0x80;
-  // and the bottom 7 bit here, this say which key it actually is
-  uint8_t bottom_bit = scancode & 0x7F;
+  // and the bottom 7 bit here, this say which key it actually is (we dont need it but imma just have it stand here)
+  // uint8_t bottom_bit = scancode & 0x7F;
 
   if (scancode == 2A || scancode == 36) {
     // if the most significant bit was set then we know we let a key go
@@ -199,10 +199,38 @@ void keyboard_handler(interrupt_frame_t *frame) {
     return;
   }
 
+  // if its any other kind of release then the shift then we just return
+  if (top_bit) {
+    return;
+  }
+
+  // if the scancode we got is bigger than the table we have we just return
+  if (scancode > sizeof(scancode_ascii)) {
+    return;
+  }
+
+  char key = kbd_shift ? scancode_ascii_shift[scancode] : scancode_ascii[scancode];
+
+  // if what we got is 0 then that means that we dont have a character to print
+  if (key == 0) {
+    return;
+  }
+
+  // then if caps lock is set we basically just invert everything
+  if (kbd_caps) {
+    if (key >= 'a' && key <= 'z') {
+      key = scancode_ascii_shift[scancode];
+    } else {
+      key = scancode_ascii[scancode];
+    }
+  }
+  
+  // kbd_buffer_push((uint8_t) key);
+  //
 }
 
 char keyboard_get_key() {
-
+  
 }
 
 int keyboard_has_key() {
