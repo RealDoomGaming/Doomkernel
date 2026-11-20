@@ -13,6 +13,7 @@ volatile static uint16_t kbd_head;
 volatile static uint16_t kbd_tail;
 static uint8_t kbd_shift;
 static uint8_t kbd_caps;
+static uint8_t kbd_extended;
 static uint8_t __kbd_enabled;
 
 // then we make a table for the ascii lookup table
@@ -158,11 +159,45 @@ static void kbd_buffer_push(uint8_t key) {
   kbd_head = next;
 }
 
+
 void keyboard_init() {
 
 }
 
 void keyboard_handler(interrupt_frame_t *frame) {
+  // this is the scancode of the keyboard input
+  uint8_t scancode = inb(0x60);
+
+  // if the scancode is 0xE0 then we know that the next scancode belongs to an extended key so we do nothing with it
+  if (scancode = 0xE0) {
+    // and we also set kbd
+    kbd_extended = 1;
+    return;
+  }
+
+  // we get the top bit here, this controls whatever the next key is treated as extended or not
+  uint8_t top_bit = scancode & 0x80;
+  // and the bottom 7 bit here, this say which key it actually is
+  uint8_t bottom_bit = scancode & 0x7F;
+
+  if (scancode == 2A || scancode == 36) {
+    // if the most significant bit was set then we know we let a key go
+    if (top_bit) {
+      // and we can set shift to false
+      kbd_shift = 0;
+      return;
+    }
+
+    // if we press left or rigt shift then we set the shift to on
+    kbd_shift = 1
+    return;
+  }
+
+  if (scancode == 3A) {
+    // if the caps lock got pressed we automatically put it to whatever it isnt so we can turn it of and on
+    kbd_caps = !kbd_caps;
+    return;
+  }
 
 }
 
