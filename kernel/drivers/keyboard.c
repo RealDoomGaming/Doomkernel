@@ -3,6 +3,7 @@
 #include <keyboard/keyboard.h>
 #include <io/ports.h>
 #include <interrupts/pic.h>
+#include <scancodes.h>
 
 // here we define a buffer for the keycache
 #define KBD_BUFFER_SIZE 256
@@ -31,6 +32,10 @@ static const char scancode_ascii_shift[] = {
      0, '|', 'Y', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0,
    '*',   0, ' '
 };
+
+static char keycode_to_char(uint8_t scancode) {
+  
+}
 
 static void kbd_buffer_push(uint8_t key) {
   // we firstly calculate the next index in the buffer
