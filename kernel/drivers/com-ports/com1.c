@@ -1,9 +1,43 @@
 #include <com1/com1.h>
 #include <stdint.h>
+#include <string.h>
 
-static void init_com1() {
+uint8_t is_serial_available = 0;
+
+void write_string(const char *str) {
+    // this function is for writing a string one byte at a time to the com1
+
+    // if we didnt get a string then return instantly
+    if (!str) {
+        return;
+    }
+
+    // here we define and index, a current character and the current character in decimal
+    uint64_t i = 0;
+    char current_char = str[i];
+    uint8_t current = (uint8_t) str[i];
+
+    // then while our current character isnt the end of the string
+    while (current_char != '\0') {
+        // we check if it is the end of a line because then we need to send \r first
+        if (current_char == '\n') {
+            write_com1('\r');
+        }
+
+        // we send the current decimal byte thingi
+        write_com1(current);
+
+        // and then we increment everything
+        i++;
+        current_char = str[i];
+        current = (uint8_t) str[i];
+    }
+}
+
+uint8_t init_com1() {
     // this is the function for actually initing our com1 driver
 
+    outb(PORT + 1, 0x00);   // we disable all interrupt with this
     outb(PORT + 3, 0x80);   // this enables the DLAB (Divisor Latch Access Bit) which sets the baud rate divisor
     outb(PORT + 0, 0x03);   // this sets the divisor to 3 (low byte)
     outb(PORT + 1, 0x00);   // and this is the high byte
@@ -15,6 +49,7 @@ static void init_com1() {
 
     // here we check is the serial is faulty
     if (inb(PORT + 0) != 0xAE) {
+        is_serial_available = 1;
         return 1;
     }
 
@@ -30,7 +65,7 @@ uint8_t com1_received() {
 }
 
 uint8_t read_com1() {
-    while (com1_received == 0) {
+    while (com1_received() == 0) {
         // do nothing just wait
     };
 
