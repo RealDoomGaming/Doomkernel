@@ -67,7 +67,7 @@ start2:
     ;; before we do the lgdt we have to detect our framebuffer for future printing
     call detect_vbe  
 
-    ;; jmp vbe_halt  
+    jmp vbe_halt  
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
@@ -128,6 +128,7 @@ vbe_list_off: dw 0
 vbe_list_seg: dw 0         
 vbe_try_mode: dw 0          
 vbe_info_addr: dd 0     
+vbe_count: dw 0         
 
 ;; we have to ask the bios for the graphics mode before we jump into protected mode
 ;; since 0x10 doesnt work there and only here
@@ -163,6 +164,8 @@ detect_vbe:
     mov al, 'C'
     call vbe_print
 
+    mov word [vbe_count], 0     ;; start counting list entries for debugging reasons
+
     ;; then next we have to remember where the list of supported modes is
     ;; offset 0x0E holds a far pointer to the list combined in 2 words (offset and segment)
     ;; we save both of those in our own variables
@@ -180,6 +183,11 @@ detect_vbe:
     cmp cx, 0xFFFF          ;; 0xFFFF marks the end of the list so we check that
     je .vbe_fail
 
+    inc word [vbe_count]        ;; look at one more entry
+    cmp word [vbe_count], 300   ;; a real list has about 100 entries so if it has more then 300 it has no end
+    ja .too_long
+
+
     add si, 2               ;; we add 2 to si which goes to the next entry
     mov [vbe_list_off], si
     mov [vbe_try_mode], cx  ;; then we remember the mode we are testing
@@ -193,6 +201,9 @@ detect_vbe:
     int 0x10                ;; we call the bios
     cmp ax, 0x004F
     jne .rej_call          ;; the bios doesnt know this mode so we try the next one
+
+    mov ax, VBE_SEG
+    mov es, ax    
 
     ;; now we can actually check the answer
     mov ax, [es:0x00]       ;; we save the offset 0x00 to ax which are the mode attributes
@@ -225,17 +236,23 @@ detect_vbe:
     jmp .vbe_done
 
 
-
-.vbe_fail:
-    ;; either we got no vbe, no matching mode or the mode switch failed so we stay in text mode
-    mov dword [vbe_info_addr], 0
-
 .rej_call:
+    push ax                     ;; ah still holds the status the bios returned, save it
     mov al, 'F'
+    call vbe_print
+    pop ax
+    mov al, ah                  ;; status 1 = failed, 2 = not supported here, 3 = invalid in this video mode
+    add al, '0'                 ;; turn the number into a digit character
     call vbe_print
     jmp .next_mode
 .rej_attr:
-    mov al, 'a'
+    mov ax, [vbe_try_mode]      ;; print the mode number in hex
+    call vbe_print_hex
+    mov al, ':'
+    call vbe_print
+    mov ax, [es:0x00]           ;; and then the attributes the bios reported for it
+    call vbe_print_hex
+    mov al, ' '
     call vbe_print
     jmp .next_mode
 .rej_model:
@@ -254,10 +271,17 @@ detect_vbe:
     mov al, 'h'
     call vbe_print
     jmp .next_mode
+.too_long:
+    mov al, 'L'
+    call vbe_print
+    jmp .vbe_fail
 .no_match:
     mov al, 'X'
     call vbe_print
-    ;; falls into .vbe_fail below
+
+.vbe_fail:
+    ;; either we got no vbe, no matching mode or the mode switch failed so we stay in text mode
+    mov dword [vbe_info_addr], 0
 
 .vbe_done:
     pop fs
@@ -270,9 +294,28 @@ initrd_error:
     jmp initrd_error
 
 vbe_print:
+    xor bx, bx              ;; page 0, so the letter lands on the visible page
     mov ah, 0x0E
     int 0x10
+    ret
 
+vbe_print_hex:
+    ;; prints the 16 bit value in ax as 4 hex digits
+    pusha
+    mov dx, ax
+    mov cx, 4                   ;; 4 digits
+.hex_loop:
+    rol dx, 4                   ;; rotate the next 4 bits into the lowest nibble
+    mov al, dl
+    and al, 0x0F
+    add al, '0'
+    cmp al, '9'
+    jbe .hex_print              ;; 0-9 is fine as it is
+    add al, 7                   ;; for 10-15 we skip ahead to the letters A-F
+.hex_print:
+    call vbe_print
+    loop .hex_loop
+    popa
     ret
 
 ;; here we will define our gdt, in our gdt we want to five descriptors
