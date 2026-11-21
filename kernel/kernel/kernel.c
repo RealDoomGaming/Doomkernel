@@ -196,7 +196,7 @@ uint8_t enable_com1() {
     init_com1();
 }
 
-void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr) {
+void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, uint64_t vbe_info_addr) {
     // for initing the com1
     enable_com1();
 

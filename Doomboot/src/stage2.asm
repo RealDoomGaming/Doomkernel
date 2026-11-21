@@ -145,7 +145,7 @@ detect_vbe:
 
     cmp dword [es:0], 'VESA'    ;; the bios replaces 'VBE2' with 'VESA' if everything worked
     jne .vbe_fail
-    cmp dword [es:4], 0x0200    ;; we compare if at the offset 4 the version number is 2.0
+    cmp word [es:4], 0x0200    ;; we compare if at the offset 4 the version number is 2.0
     jb .vbe_fail
 
     ;; then next we have to remember where the list of supported modes is
@@ -178,7 +178,7 @@ detect_vbe:
     jne .next_mode          ;; the bios doesnt know this mode so we try the next one
 
     ;; now we can actually check the answer
-    mov ax, [ex:0x00]       ;; we save the offset 0x00 to ax which are the mode attributes
+    mov ax, [es:0x00]       ;; we save the offset 0x00 to ax which are the mode attributes
     and ax, 0x91            ;; then we only want to look at bit 0(mode supported?), bit 4(grahpics mode) and bit 7(linear framebuffer available?)
     cmp ax, 0x91            ;; all three have to be set
     jne .next_mode
@@ -188,7 +188,7 @@ detect_vbe:
     jne .next_mode 
     cmp word [es:0x12], VBE_WANT_WIDTH  ;; offset at 0x12 means the width in pixels
     jne .next_mode
-    cmp word [es.0x14], VBE_WANT_HEIGHT ;; offset at 0x14 means the height in pixels
+    cmp word [es:0x14], VBE_WANT_HEIGHT ;; offset at 0x14 means the height in pixels
     jne .next_mode
 
     ;; so if now we have found it we have to switch to it
@@ -574,11 +574,6 @@ SCREEN_HEIGHT64 equ 25
 long_mode_entry:
     mov rbx, lm_success_msg 
 
-    ;; this will be the fourth argument which will be passed to the kernel
-    ;; and it is the address of the vbe mode info block or 0
-    ;; if a framebuffer does not exist
-    mov ecx, [vbe_info_addr]    
-
     call lm_print_setup
 
     ;; after printing the success message we want to go into the kernel but before that we have to setup a segment register
@@ -607,6 +602,11 @@ long_mode_entry:
     mov rdi, MMAP_BUFFER
     movzx esi, word [mmap_entry_count]          ;; we use movxz here since we only move 16 bit into a 32 bit register and movzx fills the rest of the space with zeros
     mov rdx, INITRD_SEGMENT * 16 + INITRD_OFFSET  ;; this will pass the address where our file system is at to the kernel
+
+    ;; this will be the fourth argument which will be passed to the kernel
+    ;; and it is the address of the vbe mode info block or 0
+    ;; if a framebuffer does not exist
+    mov ecx, [vbe_info_addr]    
 
     ;; and then we can call the kernel
     call kernel_main
