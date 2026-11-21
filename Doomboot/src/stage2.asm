@@ -6,6 +6,19 @@
 extern bss_start
 extern bss_end
 
+;; this is the address for the vbe segment
+VBE_SEG equ 0x3000
+;; this is for turning the vbe mode off 
+VBE_MODE_OFF equ 0x0200
+;; and this is for actually what we hand to the kernel because
+;; it is the address of the physical address
+VBE_MODE_ADDR equ 0x30200
+
+;; these are the actual resolution and color depth we want
+VBE_WANT_WIDTH  equ 1024
+VBE_WANT_HEIGHT equ 768
+VBE_WANT_BPP    equ 32
+
 ;; for later we need to use E820 to detect memory in real mode (16 bit)
 ;; and for E820 we should define some stuff at the top here
 ;; like the size of each entry (64-bit base address + 64 bit length + 32 bit type + 32 bit ACPI attributes)
@@ -52,7 +65,7 @@ start2:
     jc initrd_error   
 
     ;; before we do the lgdt we have to detect our framebuffer for future printing
-    jmp framebuffer        
+    call detect_vbe        
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
@@ -106,64 +119,102 @@ detect_memory:
     popa                            ;; then we restore the registers we pushed from the stack
     ret                             ;; and simply return
 
-framebugger:
-    mov ax, 0x3000      ;; our address where we want to write
-    mov es, ax          ;; es now points to the address 0x3000
-    xor di, di          ;; this zeros di
-    mov dword [es:di], 'VBE2'   ;; this writes 4 bytes VBE2 at the address 0x3000
-    mov ax, 0x4F00      ;; then we put the function number we want to call in ax
-    int 0x10            ;; then we call the function
-    cmp ax, 0x004F      ;; we check if it failed or not
-    jne .vbe_fail   
+vbe_list_off: dw 0      
+vbe_list_seg: dw 0         
+vbe_try_mode: dw 0          
+vbe_info_addr: dd 0     
 
-.answer:
-    cmp dword [es:0], 'VESA'    ;; the bios overwrote the old signature 
+;; we have to ask the bios for the graphics mode before we jump into protected mode
+;; since 0x10 doesnt work there and only here
+detect_vbe:
+    ;; we have to save everything here because the bios is allowed to change the registers
+    ;; when we ask the bios for a framebuffer for our text output
+    pusha
+    push es
+    push fs
+
+    ;; firstly we have to ask the bios if the vbe exists at all
+    mov ax, VBE_SEG
+    mov es, ax          ;; we move our vbe segment address into es
+    xor di, di          ;; and xor di so its 0
+    mov dword [es:di], 'VBE2'   ;; then we write the 4 bytes 'VBE2' at the start of the buffer which tells the bios that we want 2.0 vbe layout
+    mov ax, 0x4F00      ;; then we put the number of the function into ax
+    int 0x10            ;; and call the bios
+    cmp ax, 0x004F      ;; 0x00 means the function is not supported so we check for 0x004F here
     jne .vbe_fail
-    cmp dword [es:4], 0x0200    ;; we need to set the version, so we set it to atleast 2.0
 
-.vbe_loop
-    ;; this is for the mode list
-    mov si, [es:0x0E]              ;; offset part
-    mov ax, [es:0x10]              ;; segment part
-    mov fs, ax                     ;; FS => segment of the mode list
+    cmp dword [es:0], 'VESA'    ;; the bios replaces 'VBE2' with 'VESA' if everything worked
+    jne .vbe_fail
+    cmp dword [es:4], 0x0200    ;; we compare if at the offset 4 the version number is 2.0
+    jb .vbe_fail
 
-    mov cx, [fs:si]                 ;; move the mode number into cx
-    cmp cx, 0xFFFF
-    je .set_mode
+    ;; then next we have to remember where the list of supported modes is
+    ;; offset 0x0E holds a far pointer to the list combined in 2 words (offset and segment)
+    ;; we save both of those in our own variables
+    mov ax, [es:0x0E]
+    mov [vbe_list_off], ax      
+    mov ax, [es:0x10]
+    mov [vbe_list_seg], ax      
 
-    ;; add 2 to the si register
-    add si, 2
+.next_mode:
+    ;; then we go through every mode number until we find the one we want
+    mov ax, [vbe_list_seg]
+    mov fs, ax              ;; fs:si points at the current location of the list
+    mov si, [vbe_list_off]  
+    mov cx, [fs:si]         ;; and then we store the mode number of this entry in cx
+    cmp cx, 0xFFFF          ;; 0xFFFF marks the end of the list so we check that
+    je .vbe_fail
+    add si, 2               ;; we add 2 to si which goes to the next entry
+    mov [vbe_list_off], si
+    mov [vbe_try_mode], cx  ;; then we remember the mode we are testing
 
-    ;; then when we have the mode number in cx
-    mov as, 0x3000
-    mov es, ax              ;; we have to set the offset every time we cant assume that it survived
-    mov di, 0x0200          ;; then we put the mode into the buffer
-    mov av, 0x4F01
-    ;; and cx already holds the whole number
-    int 0x10                ;; so we call the function
-    cmp ax, 0x004F          
-    jne .vbe_loop
+    ;; now we actually ask the bios what the mode looks like
+    mov ax, VBE_SEG
+    mov es, ax              ;; we always set es again because we cannot assume that it survived
+    mov di, VBE_MODE_OFF    ;; this is where the answer from the bios goes
+    mov ax, 0x4F01
+    int 0x10                ;; we call the bios
+    cmp ax, 0x004F
+    jne .next_mode          ;; the bios doesnt know this mode so we try the next one
 
-    mov ax, [es:0x00]       ;; we move the attributes into ax
-    and ax, 0x91            ;; then we set bit 7, 4 and 0
-    cmp ax, 0x91
-    jne .vbe_loop
-    cmp byte [es:0x19], 32         ;; the bits per pixel
-    jne .vbe_loop
-    cmp word [es:0x12], 1024       ;; the width
-    jne .vbe_loop
-    cmp word [es:0x14], 768        ;; the height
-    jne .vbe_loop
+    ;; now we can actually check the answer
+    mov ax, [ex:0x00]       ;; we save the offset 0x00 to ax which are the mode attributes
+    and ax, 0x91            ;; then we only want to look at bit 0(mode supported?), bit 4(grahpics mode) and bit 7(linear framebuffer available?)
+    cmp ax, 0x91            ;; all three have to be set
+    jne .next_mode
+    cmp byte [es:0x1B], 6   ;; offset at 0x1B means the memory model and 6 mean direct mode
+    jne .next_mode
+    cmp byte [es:0x19], VBE_WANT_BPP    ;; offset at 0x19 means bits per pixel
+    jne .next_mode 
+    cmp word [es:0x12], VBE_WANT_WIDTH  ;; offset at 0x12 means the width in pixels
+    jne .next_mode
+    cmp word [es.0x14], VBE_WANT_HEIGHT ;; offset at 0x14 means the height in pixels
+    jne .next_mode
 
-    jmp .vbe_loop
-
-.set_mode:
-    mov bx, []          ;; we mov into bx what mode we chose
-    or  bx, 0x4000      ;; this is the linear framebuffer bit
-    mov ax, 0x4F02     
+    ;; so if now we have found it we have to switch to it
+    mov bx, [vbe_try_mode]      ;; the mode number has to go into bx for this function
+    or bx, 0x4000               ;; bit 14 means to use linear frame buffer and without it we would get a blank mode
+    mov ax, 0x4F02              ;; the function we need to call
     int 0x10
     cmp ax, 0x004F
     jne .vbe_fail
+
+    ;; then the last step is to remember where the info about the framebuffer actually lies
+    ;; so later we can give it to the kernel
+    mov dword [vbe_info_addr], VBE_MODE_ADDR
+    jmp .vbe_done
+
+
+
+.vbe_fail:
+    ;; either we got no vbe, no matching mode or the mode switch failed so we stay in text mode
+    mov dword [vbe_info_addr], 0
+
+.vbe_done:
+    pop fs
+    pop es
+    popa
+    ret
 
 initrd_error:
     ;; this label is just an inifite loop, might add a print later
@@ -522,6 +573,12 @@ SCREEN_HEIGHT64 equ 25
 
 long_mode_entry:
     mov rbx, lm_success_msg 
+
+    ;; this will be the fourth argument which will be passed to the kernel
+    ;; and it is the address of the vbe mode info block or 0
+    ;; if a framebuffer does not exist
+    mov ecx, [vbe_info_addr]    
+
     call lm_print_setup
 
     ;; after printing the success message we want to go into the kernel but before that we have to setup a segment register
