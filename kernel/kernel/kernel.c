@@ -206,6 +206,8 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, 
     // we init the gdt and tss here
     gdt_kernel();
 
+    printf("VDA: %d", vbe_info_addr);
+
     // here we init the entire interrupt stuff
     interrupt_kernel();
 
