@@ -67,7 +67,7 @@ start2:
     ;; before we do the lgdt we have to detect our framebuffer for future printing
     call detect_vbe  
 
-    jmp vbe_halt  
+    ;; jmp vbe_halt  
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
@@ -206,17 +206,17 @@ detect_vbe:
     mov es, ax    
 
     ;; now we can actually check the answer
-    mov ax, [es:0x00]       ;; we save the offset 0x00 to ax which are the mode attributes
+    mov ax, [es:VBE_MODE_OFF + 0x00]       ;; we save the offset 0x00 to ax which are the mode attributes
     and ax, 0x91            ;; then we only want to look at bit 0(mode supported?), bit 4(grahpics mode) and bit 7(linear framebuffer available?)
     cmp ax, 0x91            ;; all three have to be set
     jne .rej_attr
-    cmp byte [es:0x1B], 6   ;; offset at 0x1B means the memory model and 6 mean direct mode
+    cmp byte [es:VBE_MODE_OFF + 0x1B], 6   ;; offset at 0x1B means the memory model and 6 mean direct mode
     jne .rej_model
-    cmp byte [es:0x19], VBE_WANT_BPP    ;; offset at 0x19 means bits per pixel
+    cmp byte [es:VBE_MODE_OFF + 0x19], VBE_WANT_BPP    ;; offset at 0x19 means bits per pixel
     jne .rej_bpp 
-    cmp word [es:0x12], VBE_WANT_WIDTH  ;; offset at 0x12 means the width in pixels
+    cmp word [es:VBE_MODE_OFF + 0x12], VBE_WANT_WIDTH  ;; offset at 0x12 means the width in pixels
     jne .rej_width
-    cmp word [es:0x14], VBE_WANT_HEIGHT ;; offset at 0x14 means the height in pixels
+    cmp word [es:VBE_MODE_OFF + 0x14], VBE_WANT_HEIGHT ;; offset at 0x14 means the height in pixels
     jne .rej_height
 
     ;; so if now we have found it we have to switch to it
