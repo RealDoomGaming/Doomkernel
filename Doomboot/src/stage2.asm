@@ -65,7 +65,9 @@ start2:
     jc initrd_error   
 
     ;; before we do the lgdt we have to detect our framebuffer for future printing
-    call detect_vbe        
+    call detect_vbe  
+
+    jmp vbe_halt  
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
@@ -77,6 +79,9 @@ start2:
     mov cr0, eax    ;; then we just move the new bit sequence back into the cr0 register
 
     jmp CODE32:protected_mode_entry     ;; here we performe a far jump and force the cpu to throw away whatever it wanted to do and continue in protected mode
+
+vbe_halt:
+    jmp vbe_halt
 
 detect_memory:
     ;; we have a detect memory function which saves each memory entry until the carry flag was set when calling int 0x15
@@ -143,10 +148,20 @@ detect_vbe:
     cmp ax, 0x004F      ;; 0x00 means the function is not supported so we check for 0x004F here
     jne .vbe_fail
 
+    mov al, 'A'
+    call vbe_print
+
     cmp dword [es:0], 'VESA'    ;; the bios replaces 'VBE2' with 'VESA' if everything worked
     jne .vbe_fail
+
+    mov al, 'B'
+    call vbe_print
+
     cmp word [es:4], 0x0200    ;; we compare if at the offset 4 the version number is 2.0
     jb .vbe_fail
+
+    mov al, 'C'
+    call vbe_print
 
     ;; then next we have to remember where the list of supported modes is
     ;; offset 0x0E holds a far pointer to the list combined in 2 words (offset and segment)
@@ -164,6 +179,10 @@ detect_vbe:
     mov cx, [fs:si]         ;; and then we store the mode number of this entry in cx
     cmp cx, 0xFFFF          ;; 0xFFFF marks the end of the list so we check that
     je .vbe_fail
+
+    mov al, 'E'
+    call vbe_print
+
     add si, 2               ;; we add 2 to si which goes to the next entry
     mov [vbe_list_off], si
     mov [vbe_try_mode], cx  ;; then we remember the mode we are testing
@@ -199,6 +218,9 @@ detect_vbe:
     cmp ax, 0x004F
     jne .vbe_fail
 
+    mov al, 'G'
+    call vbe_print
+
     ;; then the last step is to remember where the info about the framebuffer actually lies
     ;; so later we can give it to the kernel
     mov dword [vbe_info_addr], VBE_MODE_ADDR
@@ -219,6 +241,12 @@ detect_vbe:
 initrd_error:
     ;; this label is just an inifite loop, might add a print later
     jmp initrd_error
+
+vbe_print:
+    mov ah, 0x0E
+    int 0x10
+
+    ret
 
 ;; here we will define our gdt, in our gdt we want to five descriptors
 ;; 1. null descriptor -> this one is required by the cpu I think, but either way we need it
