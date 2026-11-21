@@ -67,7 +67,7 @@ start2:
     ;; before we do the lgdt we have to detect our framebuffer for future printing
     call detect_vbe  
 
-    jmp vbe_halt  
+    ;; jmp vbe_halt  
 
     ;; after we have enabled a 20 in our stage 1 we have to load a gdt (global descriptor table) in order to
     ;; jump into protected mode (32bit) and then later long mode (64 bit)
@@ -180,9 +180,6 @@ detect_vbe:
     cmp cx, 0xFFFF          ;; 0xFFFF marks the end of the list so we check that
     je .vbe_fail
 
-    mov al, 'E'
-    call vbe_print
-
     add si, 2               ;; we add 2 to si which goes to the next entry
     mov [vbe_list_off], si
     mov [vbe_try_mode], cx  ;; then we remember the mode we are testing
@@ -191,24 +188,25 @@ detect_vbe:
     mov ax, VBE_SEG
     mov es, ax              ;; we always set es again because we cannot assume that it survived
     mov di, VBE_MODE_OFF    ;; this is where the answer from the bios goes
+    mov cx, [vbe_try_mode]  ;; reload
     mov ax, 0x4F01
     int 0x10                ;; we call the bios
     cmp ax, 0x004F
-    jne .next_mode          ;; the bios doesnt know this mode so we try the next one
+    jne .rej_call          ;; the bios doesnt know this mode so we try the next one
 
     ;; now we can actually check the answer
     mov ax, [es:0x00]       ;; we save the offset 0x00 to ax which are the mode attributes
     and ax, 0x91            ;; then we only want to look at bit 0(mode supported?), bit 4(grahpics mode) and bit 7(linear framebuffer available?)
     cmp ax, 0x91            ;; all three have to be set
-    jne .next_mode
+    jne .rej_attr
     cmp byte [es:0x1B], 6   ;; offset at 0x1B means the memory model and 6 mean direct mode
-    jne .next_mode
+    jne .rej_model
     cmp byte [es:0x19], VBE_WANT_BPP    ;; offset at 0x19 means bits per pixel
-    jne .next_mode 
+    jne .rej_bpp 
     cmp word [es:0x12], VBE_WANT_WIDTH  ;; offset at 0x12 means the width in pixels
-    jne .next_mode
+    jne .rej_width
     cmp word [es:0x14], VBE_WANT_HEIGHT ;; offset at 0x14 means the height in pixels
-    jne .next_mode
+    jne .rej_height
 
     ;; so if now we have found it we have to switch to it
     mov bx, [vbe_try_mode]      ;; the mode number has to go into bx for this function
@@ -231,6 +229,35 @@ detect_vbe:
 .vbe_fail:
     ;; either we got no vbe, no matching mode or the mode switch failed so we stay in text mode
     mov dword [vbe_info_addr], 0
+
+.rej_call:
+    mov al, 'F'
+    call vbe_print
+    jmp .next_mode
+.rej_attr:
+    mov al, 'a'
+    call vbe_print
+    jmp .next_mode
+.rej_model:
+    mov al, 'm'
+    call vbe_print
+    jmp .next_mode
+.rej_bpp:
+    mov al, 'b'
+    call vbe_print
+    jmp .next_mode
+.rej_width:
+    mov al, 'w'
+    call vbe_print
+    jmp .next_mode
+.rej_height:
+    mov al, 'h'
+    call vbe_print
+    jmp .next_mode
+.no_match:
+    mov al, 'X'
+    call vbe_print
+    ;; falls into .vbe_fail below
 
 .vbe_done:
     pop fs
