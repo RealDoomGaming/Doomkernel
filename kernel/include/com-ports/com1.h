@@ -7,5 +7,7 @@
 #define COM1_PORT 0x3f8
 
 uint8_t init_com1();
+void write_com1(uint8_t);
+void write_string(const char*)
 
 #endif
