@@ -203,15 +203,22 @@ void enable_com1() {
 void enable_vbe(uint64_t vbe_info_addr) {
     printf("******INIT VBE******\n");
 
-    if (vbe_info_addr != 0) {
-        // we load the vbe
-        memcpy(&VBE, load_vbe(vbe_info_addr), sizeof(vbe_mode_info_t));
-    }
+    // we load the vbe
+    memcpy(&VBE, load_vbe(vbe_info_addr), sizeof(vbe_mode_info_t));
 
     printf("[VBE] size of vbe: %d\n", sizeof(vbe_mode_info_t));
     printf("[VBE] height: %d, width: %d, bits per pixel, %d\n", VBE.height, VBE.width, VBE.bpp);
     printf("[VBE] pitch: %d\n", VBE.pitch);
     printf("[VBE] framebuffer address: %d\n", VBE.framebuffer);
+
+    const uint16_t pdpt_entrie_idx = compute_pdpt(vbe.framebuffer);
+    const uint16_t pd_first_entry = compute_dir(vbe.framebuffer);
+
+    printf("[VBE] framebuffer mapped");
+    printf("[VBE] PDPT entries index: %d", pdpt_entrie_idx);
+    printf("[VBE] PD starting entry: %d", pd_first_entry);
+
+    fill_dir_entries(pdpt_entrie_idx, pd_first_entry, VBE);
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, uint64_t vbe_info_addr) {
@@ -219,15 +226,15 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, 
     enable_com1();
 
     // in this function we enable and print some vbe stuff
-    enable_vbe(vbe_info_addr);
+    if (vbe_info_addr != 0) {
+        enable_vbe(vbe_info_addr);
+    }
 
     // first thing we do is init the terminal
     terminal_kernel();
 
     // we init the gdt and tss here
     gdt_kernel();
-
-    printf("VDA: %d", vbe_info_addr);
 
     // here we init the entire interrupt stuff
     interrupt_kernel();
