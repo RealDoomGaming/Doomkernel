@@ -15,6 +15,7 @@
 #include <fs/fs.h>
 #include <gdt/gdt.h>
 #include <com-ports/com1.h>
+#include <video/vbe.h>
 
 static const uint8_t USER_DS = 0x1B;
 static const uint8_t USER_CS = 0x23;
@@ -27,6 +28,9 @@ extern uint8_t kernel_stack_top;
 extern void enter_user_mode(uint64_t entry_point, uint64_t user_stack, uint16_t user_cs, uint16_t user_ds);
 extern uint8_t __user_text_start[];
 extern uint8_t __user_text_end[];
+
+// this is for the vbe in the kernel
+vbe_mode_info_t VBE;
 
 // so we know where we should resume our kernel
 extern void resume_kernel(void);
@@ -196,15 +200,34 @@ void enable_com1() {
     init_com1();
 }
 
+void enable_vbe(uint64_t vbe_info_addr) {
+    printf("******INIT VBE******\n");
+
+    if (vbe_info_addr != 0) {
+        // we load the vbe
+        memcpy(&VBE, load_vbe(vbe_info_addr), sizeof(vbe_mode_info_t));
+    }
+
+    printf("[VBE] size of vbe: %d\n", sizeof(vbe_mode_info_t));
+    printf("[VBE] height: %d, width: %d, bits per pixel, %d\n", VBE.height, VBE.width, VBE.bpp);
+    printf("[VBE] pitch: %d\n", VBE.pitch);
+    printf("[VBE] framebuffer address: %d\n", VBE.framebuffer);
+}
+
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, uint64_t vbe_info_addr) {
     // for initing the com1
     enable_com1();
+
+    // in this function we enable and print some vbe stuff
+    enable_vbe(vbe_info_addr);
 
     // first thing we do is init the terminal
     terminal_kernel();
 
     // we init the gdt and tss here
     gdt_kernel();
+
+    printf("VDA: %d", vbe_info_addr);
 
     // here we init the entire interrupt stuff
     interrupt_kernel();

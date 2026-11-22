@@ -36,4 +36,6 @@ typedef struct __attribute__((packed)) {
     uint32_t framebuffer;       // 0x28 PHYSICAL address of the framebuffer
 } vbe_mode_info_t;
 
+const vbe_mode_info_t *load_vbe(const uint64_t);
+
 #endif
