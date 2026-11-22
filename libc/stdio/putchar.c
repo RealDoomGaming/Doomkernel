@@ -8,7 +8,7 @@ int putchar(int int_char) {
     // this just calls the function from the tty.h file which outputs to the vga
     terminal_write(&c, sizeof(c));
     // we also want to write it to the com1 so it also gets outputted if we are in vbe mode
-    write_string(&c);
+    write_com1((uint8_t)int_char);
 
     return int_char;
 }
