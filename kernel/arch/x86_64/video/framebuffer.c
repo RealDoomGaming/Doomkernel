@@ -60,4 +60,12 @@ void fill_dir_entries(uint16_t pdpt_entrie_idx, uint16_t pd_first_entry, vbe_mod
 
     // then we only need to do one assign to the pdpt entry idx
     pdpt[pdpt_entrie_idx] = FB_PD_ADDR | present_flag | writeable_flag;
+
+    // then we reload the cr3
+    reload_cr3();
+}
+
+static void reload_cr3() {
+    uint64_t cr3;
+    __asm__ volatile ("mov %%cr3, %0\n\t mov %0, %%cr3" : "=r"(cr3) : : "memory");
 }
