@@ -8,6 +8,6 @@
 
 uint8_t init_com1();
 void write_com1(uint8_t);
-void write_string(const char*)
+void write_string(const char*);
 
 #endif

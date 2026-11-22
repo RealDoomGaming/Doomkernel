@@ -2,3 +2,4 @@ object
 build/*
 pack_initrd
 test.bin
+qemu.log
