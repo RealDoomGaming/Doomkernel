@@ -38,4 +38,8 @@ typedef struct __attribute__((packed)) {
 
 const vbe_mode_info_t *load_vbe(const uint64_t);
 
+// framebuffer stuff
+uint64_t compute_pdpt(uint32_t);
+uint64_t compute_dir(uint32_t);
+
 #endif
