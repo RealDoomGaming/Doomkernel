@@ -12,7 +12,7 @@ const uint64_t two_mib = 2097152;
 
 uint16_t compute_pdpt(uint32_t framebuffer_addr) {
     // here we compute the pdpt index by dividing the address by 1 GiB
-    return (addr / one_gib) % 512;
+    return (framebuffer_addr / one_gib) % 512;
 }
 
 uint16_t compute_dir(uint32_t framebuffer_addr) {
@@ -38,15 +38,21 @@ void fill_dir_entries(uint16_t pdpt_entrie_idx, uint16_t pd_first_entry, vbe_mod
     // we need these flags later
     uint8_t present_flag = 1;
     uint8_t writeable_flag = 2;
+    uint8_t page_size_flag = 128;
+    // so the cpu doesnt chache video memory we need these two flags
+    uint8_t pwt_flag = 8;
+    uint8_t pcd_flag = 16;
+    // we combine all flags here
+    uint8_t flags = present_flag | writeable_flag | page_size_flag | pwt_flag | pcd_flag;
 
     // the amount of pages we need to write to
     uint64_t amount_of_pages = get_pages_amount(vbe->height, vbe->pitch, vbe->framebuffer);
     // this grows by 2 MiB per step
-    uint64_t addr = vbe->framebuffer_addr % two_mib;
+    uint64_t addr = vbe->framebuffer - (vbe->framebuffer % two_mib);
 
     for (uint64_t i = pd_first_entry; i < pd_first_entry + amount_of_pages; i++) {
         // then we write to the pd entry
-        pd[i] = addr | present_flag | writeable_flag;
+        pd[i] = addr | flags;
 
         // here we add 2 MiB to the addr
         addr += two_mib;
