@@ -30,6 +30,11 @@ uint64_t get_pages_amount(uint16_t height, uint16_t pitch, uint32_t framebuffer_
     return (offset + size + two_mib - 1) / two_mib;
 }
 
+static void reload_cr3() {
+    uint64_t cr3;
+    __asm__ volatile ("mov %%cr3, %0\n\t mov %0, %%cr3" : "=r"(cr3) : : "memory");
+}
+
 void fill_dir_entries(uint16_t pdpt_entrie_idx, uint16_t pd_first_entry, vbe_mode_info_t *vbe) {
     // these are the two pointers to the address of the pd and pdpt
     volatile uint64_t *pdpt = (volatile uint64_t *)PDPT_ADDR;
@@ -63,9 +68,4 @@ void fill_dir_entries(uint16_t pdpt_entrie_idx, uint16_t pd_first_entry, vbe_mod
 
     // then we reload the cr3
     reload_cr3();
-}
-
-static void reload_cr3() {
-    uint64_t cr3;
-    __asm__ volatile ("mov %%cr3, %0\n\t mov %0, %%cr3" : "=r"(cr3) : : "memory");
 }
