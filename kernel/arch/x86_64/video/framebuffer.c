@@ -69,3 +69,33 @@ void fill_dir_entries(uint16_t pdpt_entrie_idx, uint16_t pd_first_entry, vbe_mod
     // then we reload the cr3
     reload_cr3();
 }
+
+void put_pixel(const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t color) {
+    // Skip anything off-screen so we never touch unmapped memory.
+    if (x >= vbe->width || y >= vbe->height) {
+        return;
+    }
+
+    // Byte address is base + row * pitch + column * 4 bytes per pixel.
+    // The (uintptr_t) casts make the math 64-bit.
+    uintptr_t addr = (uintptr_t)vbe->framebuffer
+                   + (uintptr_t)y * vbe->pitch
+                   + (uintptr_t)x * 4;
+
+    *(volatile uint32_t *)addr = color;
+}
+
+void fill_rect(const vbe_mode_info_t *vbe, uint32_t x, uint32_t y,
+                uint32_t w, uint32_t h, uint32_t color) {
+    for (uint32_t row = y; row < y + h; row++) {        // outer loop rows
+        for (uint32_t col = x; col < x + w; col++) {    // inner loop columns
+            put_pixel(vbe, col, row, color);
+        }
+    }
+}
+
+void draw_test_blocks(const vbe_mode_info_t *vbe) {
+    fill_rect(vbe, 100, 284, 200, 200, 0x00FF0000);  // red
+    fill_rect(vbe, 412, 284, 200, 200, 0x0000FF00);  // green
+    fill_rect(vbe, 724, 284, 200, 200, 0x000000FF);  // blue
+}

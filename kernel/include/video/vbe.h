@@ -43,4 +43,10 @@ uint16_t compute_pdpt(uint32_t);
 uint16_t compute_dir(uint32_t);
 void fill_dir_entries(uint16_t, uint16_t, vbe_mode_info_t*);
 
+// stuff to draw pixels
+void put_pixel(const vbe_mode_info_t *, uint32_t, uint32_t, uint32_t );
+void fill_rect(const vbe_mode_info_t *, uint32_t, uint32_t,
+               uint32_t, uint32_t, uint32_t);
+void draw_test_blocks(const vbe_mode_info_t *);
+
 #endif
