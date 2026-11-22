@@ -213,12 +213,11 @@ void enable_vbe(uint64_t vbe_info_addr) {
 
     const uint16_t pdpt_entrie_idx = compute_pdpt(VBE.framebuffer);
     const uint16_t pd_first_entry = compute_dir(VBE.framebuffer);
-
-    printf("[VBE] framebuffer mapped");
-    printf("[VBE] PDPT entries index: %d", pdpt_entrie_idx);
-    printf("[VBE] PD starting entry: %d", pd_first_entry);
+    printf("[VBE] PDPT entries index: %x\n", pdpt_entrie_idx);
+    printf("[VBE] PD starting entry: %x\n", pd_first_entry);
 
     fill_dir_entries(pdpt_entrie_idx, pd_first_entry, &VBE);
+    printf("[VBE] framebuffer mapped\n");
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, uint64_t vbe_info_addr) {
