@@ -28,7 +28,7 @@ const vbe_mode_info_t* load_vbe(const uint64_t vbe_addr) {
 void vbe_terminal_init(uint64_t background, uint64_t font, uint32_t gap) {
     cursor_x = 0;
     cursor_y = 0;
-    text_scale = 1;
+    text_scale = 2;
     background_color = background;
     font_color = font;
     line_gap = gap;
