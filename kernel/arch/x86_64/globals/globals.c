@@ -1,6 +1,6 @@
 #include <globals.h>
 
-output_state DISPLAY_STATE;
+output_state DISPLAY_STATE = STATE_VBE;
 
 void set_VBE() {
     DISPLAY_STATE = STATE_VBE;
