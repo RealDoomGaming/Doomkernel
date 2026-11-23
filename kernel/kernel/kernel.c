@@ -62,6 +62,8 @@ void task_b() {
 
 void terminal_kernel() {
     terminal_init();
+    vbe_terminal_init(0xFFFFFF, 0x0);
+
     // just a msg
     printf("[terminal] cursors and color set, buffer set to VGA and screen cleared\n");
 }
@@ -226,8 +228,8 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, 
 
     // in this function we enable and print some vbe stuff
     if (vbe_info_addr != 0) {
-        set_VBE();
         enable_vbe(vbe_info_addr);
+        set_VBE();
     }
 
     // first thing we do is init the terminal
