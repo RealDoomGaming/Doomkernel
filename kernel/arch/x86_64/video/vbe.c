@@ -38,10 +38,6 @@ void vbe_write(char c) {
         cursor_x == 0;
     } else {
         int index = (cursor_y * MAX_WIDTH) + cursor_x;
-
-        void draw_character(const glyph *character, 
-            const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, 
-            uint32_t color) 
         
         draw_character(character, VBE, cursor_x, cursor_y, font_color, background_color);
  
