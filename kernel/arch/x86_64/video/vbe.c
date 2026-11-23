@@ -16,6 +16,8 @@ static uint64_t background_color;
 static uint64_t font_color;
 // the gap between lines
 static uint32_t line_gap;
+// scale for text
+static uint32_t text_scale;
 
 const vbe_mode_info_t* load_vbe(const uint64_t vbe_addr) {
     vbe_mode_info_t *vbe = (vbe_mode_info_t*)vbe_addr;
@@ -26,6 +28,7 @@ const vbe_mode_info_t* load_vbe(const uint64_t vbe_addr) {
 void vbe_terminal_init(uint64_t background, uint64_t font, uint32_t gap) {
     cursor_x = 0;
     cursor_y = 0;
+    text_scale = 1;
     background_color = background;
     font_color = font;
     line_gap = gap;
@@ -40,7 +43,7 @@ void vbe_write(char c) {
     } else if (c == '\r') {
         cursor_x = 0;
     } else {       
-        draw_character(character, &VBE, cursor_x * 8, cursor_y * (8 + line_gap), font_color, background_color);
+        draw_character(character, &VBE, cursor_x * 8, cursor_y * (8 + line_gap), font_color, background_color, text_scale);
 
         cursor_x++;
 

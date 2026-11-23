@@ -86,7 +86,7 @@ void put_pixel(const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t colo
     *(volatile uint32_t *)addr = color;
 }
 
-void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t font_color, uint32_t background_color) {
+void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t font_color, uint32_t background_color, uint32_t scale) {
     for (uint32_t row = 0; row < 8; row++) {
         for (uint32_t col = 0; col < 8; col++) {
             uint8_t shifted = character->data[row] >> col;
@@ -94,7 +94,7 @@ void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t
 
             if (bit != 0) {
                 // write this pixel
-                put_pixel(vbe, x + col, y + row, font_color);
+                put_pixel(vbe, x + col * scale, y + row, font_color);
             }
         }
     }
