@@ -62,7 +62,6 @@ void task_b() {
 
 void terminal_kernel() {
     terminal_init();
-    vbe_terminal_init(0xFFFFFF, 0x0);
 
     // just a msg
     printf("[terminal] cursors and color set, buffer set to VGA and screen cleared\n");
@@ -202,6 +201,8 @@ void enable_com1() {
 
 void enable_vbe(uint64_t vbe_info_addr) {
     printf("******INIT VBE******\n");
+
+    vbe_terminal_init(0xFFFFFF, 0x0);
 
     // we load the vbe
     memcpy(&VBE, load_vbe(vbe_info_addr), sizeof(vbe_mode_info_t));
