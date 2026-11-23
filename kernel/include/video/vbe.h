@@ -2,9 +2,7 @@
 #define __VBE_H
 
 #include <stdint.h>
-
-// this is for the vbe in the kernel
-extern vbe_mode_info_t VBE;
+#include <fonts/fonts.h>
 
 typedef struct __attribute__((packed)) {
     uint16_t attributes;        // 0x00 bit 7 = linear framebuffer supported
@@ -39,6 +37,9 @@ typedef struct __attribute__((packed)) {
     uint32_t framebuffer;       // 0x28 PHYSICAL address of the framebuffer
 } vbe_mode_info_t;
 
+// this is for the vbe in the kernel
+extern vbe_mode_info_t VBE;
+
 const vbe_mode_info_t *load_vbe(const uint64_t);
 
 // framebuffer stuff
@@ -47,7 +48,7 @@ uint16_t compute_dir(uint32_t);
 void fill_dir_entries(uint16_t, uint16_t, vbe_mode_info_t*);
 
 // stuff to draw pixels
-void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t color)
+void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t color);
 void fill_rect(const vbe_mode_info_t *, uint32_t, uint32_t,
                uint32_t, uint32_t, uint32_t);
 void draw_test_blocks(const vbe_mode_info_t *);
