@@ -10,9 +10,9 @@ int putchar(int int_char) {
     // this just calls the function from the tty.h file which outputs to the vga
 
     // if we dont have a vbe mode we do this
-    if (DISPLAY_STATE == output_state.VGA) {
+    if (DISPLAY_STATE == STATE_VGA) {
         terminal_write(&c, sizeof(c));
-    } else if (DISPLAY_STATE == output_state.VBE) {
+    } else if (DISPLAY_STATE == STATE_VBE) {
         // else we do this
         vbe_write(c);
     }

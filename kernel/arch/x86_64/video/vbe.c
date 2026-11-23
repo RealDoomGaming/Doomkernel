@@ -43,7 +43,7 @@ void vbe_write(char c) {
             const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, 
             uint32_t color) 
         
-        draw_character(character, VBE cursor_x, cursor_y, font_color, background_color);
+        draw_character(character, VBE, cursor_x, cursor_y, font_color, background_color);
  
 
         cursor_x++;

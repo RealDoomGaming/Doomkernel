@@ -2,10 +2,10 @@
 #define __GLOBALS_H
 
 typedef enum {
-    VBE, VGA
+    STATE_VBE, STATE_VGA
 } output_state;
 
-extern output_state DISPLAY_STATE = output_state.VGA;
+extern output_state DISPLAY_STATE = STATE_VGA;
 
 void set_VBE();
 void set_VGA();
