@@ -206,7 +206,7 @@ void enable_com1() {
 void enable_vbe(uint64_t vbe_info_addr) {
     printf("******INIT VBE******\n");
 
-    vbe_terminal_init(0xFFFFFF, 0x0);
+    vbe_terminal_init(0xFFFFFF, 0x0, 2);
 
     // we load the vbe
     memcpy(&VBE, load_vbe(vbe_info_addr), sizeof(vbe_mode_info_t));

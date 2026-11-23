@@ -95,8 +95,6 @@ void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t
             if (bit != 0) {
                 // write this pixel
                 put_pixel(vbe, x + col, y + row, font_color);
-            } else {
-                put_pixel(vbe, x + col, y + row, background_color);
             }
         }
     }
