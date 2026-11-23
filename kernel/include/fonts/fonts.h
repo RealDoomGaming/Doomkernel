@@ -86,4 +86,6 @@ static const glyph glyp_table[128] = {
     ['z'] = {{0x00, 0x00, 0x3F, 0x19, 0x0C, 0x26, 0x3F, 0x00}},
 }
 
+glyph get_glyph(const);
+
 #endif
