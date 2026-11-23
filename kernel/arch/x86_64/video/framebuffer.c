@@ -112,22 +112,19 @@ void fill_rect(const vbe_mode_info_t *vbe, uint32_t x, uint32_t y,
 }
 
 void draw_test_blocks(const vbe_mode_info_t *vbe) {
-    fill_rect(vbe, 100, 284, 200, 200, 0x00FF0000);  // red
-    fill_rect(vbe, 412, 284, 200, 200, 0x0000FF00);  // green
-    fill_rect(vbe, 724, 284, 200, 200, 0x000000FF);  // blue
+    fill_rect(vbe, 100, 284, 200, 200, 0x00FF0000, 0x0);  // red
+    fill_rect(vbe, 412, 284, 200, 200, 0x0000FF00, 0x0);  // green
+    fill_rect(vbe, 724, 284, 200, 200, 0x000000FF, 0x0);  // blue
 }
 
 void draw_hello_test(const vbe_mode_info_t *vbe) {
     const char *msg = "Hello World";
     uint32_t x = 100;
     uint32_t y = 100;
-
-    // 11 characters * 8 px => 88 px wide, 8 px tall, plus 10 px padding per side.
-    fill_rect(vbe, x - 10, y - 10, 88 + 20, 8 + 20, 0x00202060);
-
+    
     // Walk the string until the terminating '\0'.
     for (uint32_t i = 0; msg[i] != '\0'; i++) {
         // Each character cell is 8 pixels wide, so character i starts at x + i * 8.
-        draw_character(get_glyph(msg[i]), vbe, x + i * 8, y, 0x00FFFFFF);
+        draw_character(get_glyph(msg[i]), vbe, x + i * 8, y, 0x00FFFFFF, 0x00202060);
     }
 }
