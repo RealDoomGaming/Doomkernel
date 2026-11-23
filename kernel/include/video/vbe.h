@@ -48,5 +48,6 @@ void put_pixel(const vbe_mode_info_t *, uint32_t, uint32_t, uint32_t );
 void fill_rect(const vbe_mode_info_t *, uint32_t, uint32_t,
                uint32_t, uint32_t, uint32_t);
 void draw_test_blocks(const vbe_mode_info_t *);
+void draw_hello_test(const vbe_mode_info_t *);
 
 #endif

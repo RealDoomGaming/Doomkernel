@@ -7,7 +7,7 @@ typedef struct {
     uint8_t data[8];    // this is the data how the glyph will be mapped
 } glyph;
 
-const glyph glyph_table[128] = {
+static const glyph glyph_table[128] = {
      // blank and punctuation
     [' '] = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
     ['!'] = {{0x18, 0x3C, 0x3C, 0x18, 0x18, 0x00, 0x18, 0x00}},
