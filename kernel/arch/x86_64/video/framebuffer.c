@@ -96,7 +96,7 @@ void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t
                 // write this pixel
                 // put_pixel(vbe, x + col * scale, y + row * scale, font_color);
                 // instead of putting the pixel we call fill_rect which gives us filled out better readable letters
-                fill_rect(vbe,  + col * scale, y + row * scale, scale, scale, font_color);
+                fill_rect(vbe, x + col * scale, y + row * scale, scale, scale, font_color);
             }
         }
     }
