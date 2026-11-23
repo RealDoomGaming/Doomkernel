@@ -26,6 +26,8 @@ void vbe_terminal_init(uint64_t background, uint64_t font) {
     cursor_y = 0;
     background_color = background;
     font_color = font;
+
+    fill_rect(&VBE, cursor_x, cursor_y, 1024, 768, background_color);
 }
 
 void vbe_write(char c) {   
@@ -39,7 +41,7 @@ void vbe_write(char c) {
     } else {
         int index = (cursor_y * MAX_WIDTH) + cursor_x;
         
-        draw_character(character, &VBE, cursor_x, cursor_y, font_color, background_color);
+        draw_character(character, &VBE, cursor_x*8, cursor_y*8, font_color, background_color);
  
 
         cursor_x++;

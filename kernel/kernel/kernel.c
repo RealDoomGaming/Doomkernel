@@ -219,8 +219,6 @@ void enable_vbe(uint64_t vbe_info_addr) {
 
     fill_dir_entries(pdpt_entrie_idx, pd_first_entry, &VBE);
     printf("[VBE] framebuffer mapped\n");
-    draw_test_blocks(&VBE);
-    draw_hello_test(&VBE);
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, uint64_t vbe_info_addr) {
