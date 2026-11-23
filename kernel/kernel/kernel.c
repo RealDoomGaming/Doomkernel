@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <globals.h>
 
 #include "user_code.h"
 #include <syscalls/syscall.h>
@@ -28,9 +29,6 @@ extern uint8_t kernel_stack_top;
 extern void enter_user_mode(uint64_t entry_point, uint64_t user_stack, uint16_t user_cs, uint16_t user_ds);
 extern uint8_t __user_text_start[];
 extern uint8_t __user_text_end[];
-
-// this is for the vbe in the kernel
-vbe_mode_info_t VBE;
 
 // so we know where we should resume our kernel
 extern void resume_kernel(void);
@@ -228,6 +226,7 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, 
 
     // in this function we enable and print some vbe stuff
     if (vbe_info_addr != 0) {
+        set_VBE();
         enable_vbe(vbe_info_addr);
     }
 

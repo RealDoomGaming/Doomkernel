@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+// this is for the vbe in the kernel
+extern vbe_mode_info_t VBE;
+
 typedef struct __attribute__((packed)) {
     uint16_t attributes;        // 0x00 bit 7 = linear framebuffer supported
     uint8_t  window_a;          // 0x02 old banking stuff, we dont use it
@@ -44,10 +47,12 @@ uint16_t compute_dir(uint32_t);
 void fill_dir_entries(uint16_t, uint16_t, vbe_mode_info_t*);
 
 // stuff to draw pixels
-void put_pixel(const vbe_mode_info_t *, uint32_t, uint32_t, uint32_t );
+void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t color)
 void fill_rect(const vbe_mode_info_t *, uint32_t, uint32_t,
                uint32_t, uint32_t, uint32_t);
 void draw_test_blocks(const vbe_mode_info_t *);
 void draw_hello_test(const vbe_mode_info_t *);
+
+void vbe_write(char *);
 
 #endif

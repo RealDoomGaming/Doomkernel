@@ -5,7 +5,7 @@ typedef enum {
     VBE, VGA
 } output_state;
 
-extern output_state DISPLAY_STATE;
+extern output_state DISPLAY_STATE = output_state.VGA;
 
 void set_VBE();
 void set_VGA();
