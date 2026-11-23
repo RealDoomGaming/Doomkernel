@@ -64,7 +64,11 @@ void terminal_kernel() {
     terminal_init();
 
     // just a msg
-    printf("[terminal] cursors and color set, buffer set to VGA and screen cleared\n");
+    if (DISPLAY_STATE == STATE_VGA) {
+        printf("[terminal] cursors and color set, buffer set to VGA and screen cleared\n");
+    } else if (DISPLAY_STATE == STATE_VBE) {
+        printf("[terminal] cursors and color set, buffer set to VBE and screen cleared\n");
+    }
 }
 
 void gdt_kernel() {
@@ -219,6 +223,9 @@ void enable_vbe(uint64_t vbe_info_addr) {
 
     fill_dir_entries(pdpt_entrie_idx, pd_first_entry, &VBE);
     printf("[VBE] framebuffer mapped\n");
+
+    // then we fill everything with the background color
+    fill_rect(&VBE, 0, 0, 1024, 768, 0xFFFFFF);
 }
 
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, uint64_t vbe_info_addr) {

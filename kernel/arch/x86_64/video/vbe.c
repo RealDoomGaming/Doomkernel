@@ -26,8 +26,6 @@ void vbe_terminal_init(uint64_t background, uint64_t font) {
     cursor_y = 0;
     background_color = background;
     font_color = font;
-
-    fill_rect(&VBE, cursor_x, cursor_y, 1024, 768, background_color);
 }
 
 void vbe_write(char c) {   
