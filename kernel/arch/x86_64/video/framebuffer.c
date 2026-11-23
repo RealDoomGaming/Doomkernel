@@ -87,6 +87,9 @@ void put_pixel(const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t colo
 }
 
 void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t font_color, uint32_t background_color, uint32_t scale) {
+    // we also fill the first cell so pixels arent in eachother
+    fill_rect(vbe, x, y, 8 * scale, 8 * scale, background_color);
+
     for (uint32_t row = 0; row < 8; row++) {
         for (uint32_t col = 0; col < 8; col++) {
             uint8_t shifted = character->data[row] >> col;
@@ -94,7 +97,7 @@ void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t
 
             if (bit != 0) {
                 // write this pixel
-                put_pixel(vbe, x + col * scale, y + row * scale, font_color);
+                put_pixel(vbe, x + col, y + row, font_color);
                 // instead of putting the pixel we call fill_rect which gives us filled out better readable letters
                 // fill_rect(vbe, x + col * scale, y + row * scale, scale, scale, font_color);
             }
