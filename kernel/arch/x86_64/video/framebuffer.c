@@ -1,5 +1,6 @@
 #include <video/vbe.h>
 #include <stdint.h>
+#include <fonts/fonts.h>
 
 // these are the addresses in memory which we need
 #define PDPT_ADDR   0x2000UL
@@ -85,6 +86,20 @@ void put_pixel(const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t colo
     *(volatile uint32_t *)addr = color;
 }
 
+void draw_character(const glyph *character, const vbe_mode_info_t *vbe, uint32_t x, uint32_t y, uint32_t color) {
+    for (uint32_t row = 0; row < 8; row++) {
+        for (uint32_t col = 0; col < 8; col++) {
+            uint8_t shifted = character->data[row] >> col;
+            uint8_t bit = shifted & 1;
+
+            if (bit != 0) {
+                // write this pixel
+                put_pixel(vbe, x + col, y + row, color);
+            }
+        }
+    }
+}
+
 void fill_rect(const vbe_mode_info_t *vbe, uint32_t x, uint32_t y,
                 uint32_t w, uint32_t h, uint32_t color) {
     for (uint32_t row = y; row < y + h; row++) {        // outer loop rows
@@ -99,3 +114,4 @@ void draw_test_blocks(const vbe_mode_info_t *vbe) {
     fill_rect(vbe, 412, 284, 200, 200, 0x0000FF00);  // green
     fill_rect(vbe, 724, 284, 200, 200, 0x000000FF);  // blue
 }
+

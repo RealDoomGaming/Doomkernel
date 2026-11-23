@@ -1,6 +1,6 @@
 #include <fonts/fonts.h>
 
-glyph *get_glyph(const char c) {
+const glyph *get_glyph(const char c) {
     // this function is for giving back the glyph which fits to the character
 
     // the character we need to search for
