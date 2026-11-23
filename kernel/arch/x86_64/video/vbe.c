@@ -40,7 +40,7 @@ void vbe_write(char c) {
     } else if (c == '\r') {
         cursor_x = 0;
     } else {       
-        draw_character(character, &VBE, cursor_x*8, cursor_y*8, font_color, background_color);
+        draw_character(character, &VBE, cursor_x * 8, cursor_y * (8 + line_gap), font_color, background_color);
 
         cursor_x++;
 
