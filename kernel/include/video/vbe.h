@@ -54,6 +54,6 @@ void fill_rect(const vbe_mode_info_t *, uint32_t, uint32_t,
 void draw_test_blocks(const vbe_mode_info_t *);
 void draw_hello_test(const vbe_mode_info_t *);
 
-void vbe_write(char *);
+void vbe_write(char c);
 
 #endif

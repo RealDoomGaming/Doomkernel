@@ -39,7 +39,7 @@ void vbe_write(char c) {
     } else {
         int index = (cursor_y * MAX_WIDTH) + cursor_x;
         
-        draw_character(character, VBE, cursor_x, cursor_y, font_color, background_color);
+        draw_character(character, &VBE, cursor_x, cursor_y, font_color, background_color);
  
 
         cursor_x++;
