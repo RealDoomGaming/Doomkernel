@@ -111,7 +111,7 @@ void keyboard_kernel() {
         // we get a input key
         typed = keyboard_get_key();
         // and we directly print it to the terminal
-        terminal_put_char(typed);
+        vbe_write(typed);
     } while (typed != 27); // 27 stands for the escape key
     printf("\n");
 }
@@ -157,7 +157,7 @@ void filesystem_kernel(uint64_t initrd_addr) {
 
         // we do this here because we dont know if the file is null terminated
         for (uint32_t i = 0; i < entry->size; i++) {
-            terminal_put_char(data[i]);
+            vbe_write(data[i]);
         }
 
         printf("\n");
