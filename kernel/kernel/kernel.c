@@ -206,10 +206,11 @@ void enable_com1() {
 void enable_vbe(uint64_t vbe_info_addr) {
     printf("******INIT VBE******\n");
 
-    vbe_terminal_init(0xFFFFFF, 0x0, 2);
-
     // we load the vbe
     memcpy(&VBE, load_vbe(vbe_info_addr), sizeof(vbe_mode_info_t));
+
+    // and init everything for the terminal for the vbe
+    vbe_terminal_init(0xFFFFFF, 0x0, 2);
 
     printf("[VBE] size of vbe: %d\n", sizeof(vbe_mode_info_t));
     printf("[VBE] height: %d, width: %d, bits per pixel, %d\n", VBE.height, VBE.width, VBE.bpp);
