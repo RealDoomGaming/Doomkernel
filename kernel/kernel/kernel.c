@@ -269,6 +269,8 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, 
     // printing with our custom printf function :DD
     printf("[kernel] Successfully booted into the kernel!\n");
 
+    write_logo("DOOMKERNEL");
+
     // while loop so the cpu doesnt run off into memory junk
     while (1) {
         __asm__ volatile("hlt");

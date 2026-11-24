@@ -61,3 +61,25 @@ void vbe_write(char c) {
         cursor_y = max_height - 1;
     }
 }
+
+void write_logo_character(char c, uint32_t text_size) {
+    const glyph *character = get_glyph((const char) c); 
+
+    draw_character(character, &VBE, cursor_x * 8 * text_size, cursor_y * (8  * text_size + line_gap), font_color, background_color, text_size);
+
+    cursor_x += cursor_x*text_size;
+}
+
+void write_logo(char *c) {
+    const uint32_t text_size = 5;
+
+    uint32_t idx = 0;
+
+    while (c[idx] != '\0') {
+        write_logo_character(c[idx], text_size);
+
+        idx++;
+    }
+
+    cursor_y += cursor_y*(text_size + line_gap);
+}
