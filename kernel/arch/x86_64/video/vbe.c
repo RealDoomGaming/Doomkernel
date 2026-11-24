@@ -69,15 +69,15 @@ void write_logo_character(char c, uint32_t text_size, uint32_t x, uint32_t y) {
 }
 
 void write_logo(char *c) {
-    const uint32_t text_size = 5;
+    const uint32_t text_size = 10;
 
     const uint32_t logo_height = 8 * text_size;
 
     const uint32_t logo_length = 10;
     const uint32_t letter_spacing = 12;
     const uint32_t letter_width = text_size * 8;
-    uint32_t x = (logo_length * letter_width + (logo_length - 1) * letter_spacing)/2;
-    const uint32_t y = (logo_height) * cursor_y;
+    uint32_t x = 20;
+    const uint32_t y = 20;
 
     uint32_t idx = 0;
     while (c[idx] != '\0') {
@@ -88,5 +88,7 @@ void write_logo(char *c) {
         idx++;
     }
 
-    
+    // since we only render the logo when we boot into the kernel we can reset the y and x here
+    cursor_x = 0;
+    cursor_y = text_size/2;    
 }

@@ -229,6 +229,20 @@ void enable_vbe(uint64_t vbe_info_addr) {
     fill_rect(&VBE, 0, 0, 1024, 768, 0xFFFFFF);
 }
 
+void boot_into_kernel() {
+    printf("[kernel] Press Escape to boot into the kernel\n");
+    char typed;
+    do {
+        typed = keyboard_get_key();
+    } while (typed != 27);
+
+    fill_rect(&VBE, 0, 0, 1024, 768, 0xFFFFFF);
+    write_logo("DOOMKERNEL");
+
+    printf("\n");
+}
+
+
 void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, uint64_t vbe_info_addr) {
     // for initing the com1
     enable_com1();
@@ -266,10 +280,11 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, 
     // here we will test our user mode by entering it then testing something and then returning to ring 0
     user_mode_kernel();
 
+    // we wait for input so we can clear the screen, show the logo and boot into the kernel
+    boot_into_kernel();
+
     // printing with our custom printf function :DD
     printf("[kernel] Successfully booted into the kernel!\n");
-
-    write_logo("DOOMKERNEL");
 
     // while loop so the cpu doesnt run off into memory junk
     while (1) {
