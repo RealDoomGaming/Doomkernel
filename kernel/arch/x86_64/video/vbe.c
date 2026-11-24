@@ -73,23 +73,22 @@ void write_logo(char *c) {
 
     const uint32_t logo_height = 8 * text_size;
     const uint32_t row_height = logo_height + line_gap;
-    
-    const uint32_t rows = (logo_height + row_height - 1) / row_height;
 
-    const uint32_t x = cursor_x * 8 * text_size;
-    const uint32_t y = cursor_y * row_height;
+    const uint32_t logo_length = 10;
+    const uint32_t gap = 9;
+    const uint32_t letter_spacing = 12;
+    const uint32_t letter_width = text_size * 8;
+    uint32_t x = logo_length * (letter_spacing) + gap * letter_spacing;
+    const uint32_t y = cursor_y * 8;
 
     uint32_t idx = 0;
     while (c[idx] != '\0') {
         write_logo_character(c[idx], text_size, x, y);
 
+        x = x + idx * (letter_width + letter_spacing);
+
         idx++;
     }
 
-    cursor_x = 0;
-    cursor_y += rows;
-
-    if (cursor_y >= max_height) {
-        cursor_y = max_height - 1;
-    }
+    
 }
