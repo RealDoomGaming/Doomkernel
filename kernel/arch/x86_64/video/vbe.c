@@ -5,9 +5,6 @@
 
 vbe_mode_info_t VBE;
 
-#define MAX_HEIGHT 95
-#define MAX_WIDTH 127
-
 // global cursor positions
 static uint32_t cursor_x;
 static uint32_t cursor_y;
@@ -18,6 +15,9 @@ static uint64_t font_color;
 static uint32_t line_gap;
 // scale for text
 static uint32_t text_scale;
+// max height and width
+static uint32_t max_height;
+static uint32_t max_width;
 
 const vbe_mode_info_t* load_vbe(const uint64_t vbe_addr) {
     vbe_mode_info_t *vbe = (vbe_mode_info_t*)vbe_addr;
@@ -32,6 +32,9 @@ void vbe_terminal_init(uint64_t background, uint64_t font, uint32_t gap) {
     background_color = background;
     font_color = font;
     line_gap = gap;
+
+    max_height = VBE.height / (8 * text_scale + line_gap);
+    max_width = VBE.width / (8 * text_scale);
 }
 
 void vbe_write(char c) {   
@@ -43,18 +46,18 @@ void vbe_write(char c) {
     } else if (c == '\r') {
         cursor_x = 0;
     } else {       
-        draw_character(character, &VBE, cursor_x * 8, cursor_y * (8 + line_gap), font_color, background_color, text_scale);
+        draw_character(character, &VBE, cursor_x * 8 * text_scale, cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
 
         cursor_x++;
 
-        if (cursor_x >= MAX_WIDTH) {
+        if (cursor_x >= max_width) {
             cursor_x = 0;
             cursor_y++;
         }
     }
 
-    if (cursor_y >= MAX_HEIGHT) {
+    if (cursor_y >= max_height) {
         cursor_x = 0;
-        cursor_y = MAX_HEIGHT - 1;
+        cursor_y = max_height - 1;
     }
 }
