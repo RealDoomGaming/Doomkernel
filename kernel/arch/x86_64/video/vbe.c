@@ -7,6 +7,11 @@
 
 vbe_mode_info_t VBE;
 
+// we define an array which saves all of the stuff printed so we can build in scroll later
+static uint64_t characters[500][64];
+// a variable which defines which line gets shown last
+static uint64_t head;
+
 // global cursor positions
 static uint32_t cursor_x;
 static uint32_t cursor_y;
@@ -59,6 +64,20 @@ void hide_cursor() {
     cursor_shown = 0;
 }
 
+void store_character(char c) {
+    if (c != '\n') {
+        characters[head][cursor_x] = c;
+    } else {
+        // go to the next line if the character is a new line
+        head++;
+        // and fill this line with only spaces
+        for (uint64_t i = 0; i < 64; i++) {
+            characters[head][i] = ' ';
+        }
+    }
+
+}
+
 void vbe_write(char c) {   
     const glyph *character = get_glyph((const char) c);
     hide_cursor();
@@ -70,6 +89,7 @@ void vbe_write(char c) {
         cursor_x = 0;
     } else {       
         draw_character(character, &VBE, cursor_x * 8 * text_scale, cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
+        store_character(c);
 
         cursor_x++;
 
