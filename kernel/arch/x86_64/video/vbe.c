@@ -3,12 +3,14 @@
 #include <keyboard/keyboard.h>
 #include <timer/pit.h>
 
+#include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 
 vbe_mode_info_t VBE;
 
 // we define an array which saves all of the stuff printed so we can build in scroll later
-static uint64_t characters[500][64];
+static char characters[500][64];
 // a variable which defines which line gets shown last
 static uint64_t head;
 
@@ -65,6 +67,7 @@ void hide_cursor() {
 }
 
 void store_character(char c) {
+    printf("%c", c);
     if (c != '\n') {
         characters[head][cursor_x] = c;
     } else {
@@ -75,7 +78,8 @@ void store_character(char c) {
             characters[head][i] = ' ';
         }
     }
-
+    // printf("Current head: %d, Current cursor_x = %d\n", head, cursor_x);
+    // printf("Current character at head and cursor: %c\n", characters[head][cursor_x]);
 }
 
 void vbe_write(char c) {   
@@ -89,7 +93,7 @@ void vbe_write(char c) {
         cursor_x = 0;
     } else {       
         draw_character(character, &VBE, cursor_x * 8 * text_scale, cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
-        store_character(c);
+        // store_character(c);
 
         cursor_x++;
 

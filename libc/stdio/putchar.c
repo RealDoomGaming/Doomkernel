@@ -19,7 +19,7 @@ int putchar(int int_char) {
 
     // we also want to write it to the com1 so it also gets outputted if we are in vbe mode
     // for testing we wrote this: write_com1((uint8_t)int_char);
-
+    write_com1((uint8_t)int_char);
 
 
     return int_char;
