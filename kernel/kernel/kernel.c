@@ -226,7 +226,7 @@ void enable_vbe(uint64_t vbe_info_addr) {
     printf("[VBE] framebuffer mapped\n");
 
     // then we fill everything with the background color
-    fill_rect(&VBE, 0, 0, 1024, 768, 0xFFFFFF);
+    clear();
 }
 
 void boot_into_kernel() {
@@ -236,7 +236,7 @@ void boot_into_kernel() {
         typed = keyboard_get_key();
     } while (typed != 27);
 
-    fill_rect(&VBE, 0, 0, 1024, 768, 0xFFFFFF);
+    clear();
     write_logo("DOOMKERNEL");
 
     printf("\n");

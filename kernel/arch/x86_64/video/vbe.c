@@ -92,3 +92,7 @@ void write_logo(char *c) {
     cursor_x = 0;
     cursor_y = text_size/2;    
 }
+
+void clear() {
+    fill_rect(&VBE, 0, 0, VBE.width, VBE.height, 0xFFFFFF);
+}

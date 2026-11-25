@@ -51,6 +51,7 @@ void fill_dir_entries(uint16_t, uint16_t, vbe_mode_info_t*);
 void draw_character(const glyph*, const vbe_mode_info_t*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 void fill_rect(const vbe_mode_info_t *, uint32_t, uint32_t,
                uint32_t, uint32_t, uint32_t);
+void clear();
 
 void vbe_terminal_init(uint64_t, uint64_t, uint32_t);
 void vbe_write(char);
