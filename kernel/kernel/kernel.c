@@ -99,6 +99,16 @@ void interrupt_kernel() {
     printf("[test] we are still alive (no kernel panic)\n");
 }
 
+void wait_for_esc() {
+    char typed;
+    do {
+        // we get a input key
+        typed = wait_for_key();
+        // and we directly print it to the terminal
+        vbe_write(typed);
+    } while (typed != 27); // 27 stands for the escape key
+}
+
 void keyboard_kernel() {
     printf("******KEYBOARD******\n");
 
@@ -106,13 +116,7 @@ void keyboard_kernel() {
     printf("[keyboard] irq1 registered\n");
     // then we also have a test where we stop everything and have the user type something and escape is for exiting this loop
     printf("[test] type something and press escape to stop\n");
-    char typed;
-    do {
-        // we get a input key
-        typed = keyboard_get_key();
-        // and we directly print it to the terminal
-        vbe_write(typed);
-    } while (typed != 27); // 27 stands for the escape key
+    wait_for_esc();
     printf("\n");
 }
 
@@ -231,10 +235,7 @@ void enable_vbe(uint64_t vbe_info_addr) {
 
 void boot_into_kernel() {
     printf("[kernel] Press Escape to boot into the kernel\n");
-    char typed;
-    do {
-        typed = keyboard_get_key();
-    } while (typed != 27);
+    wait_for_esc();
 
     clear();
     write_logo("DOOMKERNEL");
@@ -262,11 +263,11 @@ void kernel_main(uint64_t mmap_addr, uint16_t mmap_count, uint64_t initrd_addr, 
     // here we init the entire interrupt stuff
     interrupt_kernel();
 
-    // we need to init the keyboard here
-    keyboard_kernel();
-
     // we init the timer here with 100hz
     timer_kernel();    
+
+    // we need to init the keyboard here
+    keyboard_kernel();
 
     // then we init the memory
     memory_kernel(mmap_addr, mmap_count);

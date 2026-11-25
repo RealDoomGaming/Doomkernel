@@ -57,4 +57,6 @@ void vbe_terminal_init(uint64_t, uint64_t, uint32_t);
 void vbe_write(char);
 void write_logo(char*);
 
+char wait_for_key();
+
 #endif
