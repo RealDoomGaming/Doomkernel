@@ -7,10 +7,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define BUF_ROWS 500
+#define BUF_COLS 64
+
 vbe_mode_info_t VBE;
 
+
 // we define an array which saves all of the stuff printed so we can build in scroll later
-static char characters[500][64];
+static char characters[BUF_ROWS][BUF_COLS];
 // a variable which defines which line gets shown last
 static uint64_t head;
 
@@ -67,17 +71,19 @@ void hide_cursor() {
 }
 
 void store_character(char c) {
-    printf("%c", c);
+    characters[head][cursor_x] = c;
+
     if (c != '\n') {
-        characters[head][cursor_x] = c;
-    } else {
         // go to the next line if the character is a new line
-        head++;
+        if (head < BUF_ROWS) {
+            head++;
+        }
         // and fill this line with only spaces
-        for (uint64_t i = 0; i < 64; i++) {
+        for (uint64_t i = 0; i < BUF_COLS; i++) {
             characters[head][i] = ' ';
         }
     }
+
     // printf("Current head: %d, Current cursor_x = %d\n", head, cursor_x);
     // printf("Current character at head and cursor: %c\n", characters[head][cursor_x]);
 }
@@ -140,8 +146,24 @@ void write_logo(char *c) {
     cursor_y = text_size/2;    
 }
 
+void clear_row(uint64_t line) {
+    for (uint32_t col = 0; col < BUF_COLS; col++) {
+        characters[line][col] = ' ';
+    }
+}
+
+void reset_buffer() {
+    for (uint64_t line = 0; line < BUF_ROWS; line++) {
+        clear_row(line);
+    }
+    head = 0;
+}
+
 void clear() {
-    fill_rect(&VBE, 0, 0, VBE.width, VBE.height, 0xFFFFFF);
+    cursor_x = 0;
+    cursor_y = 0;
+    reset_buffer();
+    fill_rect(&VBE, 0, 0, VBE.width, VBE.height, background_color);
 }
 
 char wait_for_key() {
