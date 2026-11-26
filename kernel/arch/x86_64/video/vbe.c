@@ -36,6 +36,8 @@ static uint32_t max_width;
 static uint8_t cursor_shown;
 static uint64_t blink_start;
 
+void reset_buffer();
+
 const vbe_mode_info_t* load_vbe(const uint64_t vbe_addr) {
     vbe_mode_info_t *vbe = (vbe_mode_info_t*)vbe_addr;
 
@@ -54,6 +56,8 @@ void vbe_terminal_init(uint64_t background, uint64_t font, uint32_t gap) {
 
     max_height = VBE.height / (8 * text_scale + line_gap);
     max_width = VBE.width / (8 * text_scale);
+
+    reset_buffer();
 }
 
 void write_cursor(char c) {
@@ -71,59 +75,53 @@ void hide_cursor() {
     cursor_shown = 0;
 }
 
+void clear_row(uint64_t line) {
+    for (uint32_t col = 0; col < BUF_COLS; col++) {
+        characters[line][col] = ' ';
+    }
+}
+
 void shift_up() {
     for (uint64_t i = 0; i < head; i++) {
         // in this loop we copy the next row into this row 
         // memcpy(void* destptr, const void* srcptr, size_t size)
-        memcpy(characters[i], characters[i+1], sizeof(char) * 64);
+        memcpy(characters[i], characters[i+1], sizeof(char) * BUF_COLS);
     }
 }
 
-void inc_head() {
+void new_line() {
     // in this function if the head ocunter isnt as as big as the amount of lines max then increase it
     if (head < BUF_ROWS - 1) {
         head++;
     } else {
         shift_up();
+        clear_row(head);
     }
 }
 
 void store_character(char c) {
     characters[head][cursor_x] = c;
-
-    if (c == '\n') {
-        // go to the next line if the character is a new line
-        inc_head();
-
-        // and fill this line with only spaces
-        for (uint64_t i = 0; i < BUF_COLS; i++) {
-            characters[head][i] = ' ';
-        }
-    }
-
-    // printf("Current head: %d, Current cursor_x = %d\n", head, cursor_x);
-    // printf("Current character at head and cursor: %c\n", characters[head][cursor_x]);
 }
 
 void vbe_write(char c) {   
     const glyph *character = get_glyph((const char) c);
     hide_cursor();
 
-    store_character(c);
-
     if (c == '\n') {
+        new_line();
         cursor_x = 0;
         cursor_y++;
     } else if (c == '\r') {
         cursor_x = 0;
     } else {       
         draw_character(character, &VBE, cursor_x * 8 * text_scale, cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
+        store_character(c);
 
         cursor_x++;
 
         if (cursor_x >= max_width) {
+            new_line();
             cursor_x = 0;
-            inc_head();
             cursor_y++;
         }
     }
@@ -163,12 +161,6 @@ void write_logo(char *c) {
     // since we only render the logo when we boot into the kernel we can reset the y and x here
     cursor_x = 0;
     cursor_y = text_size/2;    
-}
-
-void clear_row(uint64_t line) {
-    for (uint32_t col = 0; col < BUF_COLS; col++) {
-        characters[line][col] = ' ';
-    }
 }
 
 void reset_buffer() {
