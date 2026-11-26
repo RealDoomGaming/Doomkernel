@@ -16,8 +16,12 @@ vbe_mode_info_t VBE;
 
 // we define an array which saves all of the stuff printed so we can build in scroll later
 static char characters[BUF_ROWS][BUF_COLS];
-// a variable which defines which line gets shown last
+// a variable which defines which line we are at in our buffer
 static uint64_t head;
+// a variable which defines what line gets shown last on top of the screen
+static uint64_t tail;
+// then a variable which will help us when redrawing the screen
+static uint64_t V;
 
 // global cursor positions
 static uint32_t cursor_x;
@@ -54,6 +58,8 @@ void vbe_terminal_init(uint64_t background, uint64_t font, uint32_t gap) {
     line_gap = gap;
     cursor_shown = 0;
     blink_start = 0;
+    head = 0;
+    tail = 0;
 
     max_height = VBE.height / (8 * text_scale + line_gap);
     max_width = VBE.width / (8 * text_scale);
@@ -91,36 +97,9 @@ void shift_up() {
 }
 
 void redraw_screen() {
-    uint32_t local_cursor_x = 0;
-    uint32_t local_cursor_y = 0;
+    V = max_height - tail;
 
-    for (uint64_t i = head-BUF_ROWS; i < head; i++) {
-        for (uint64_t j = 0; j < BUF_COLS; j++) {
-            char c = characters[i][j];
-            const glyph *character = get_glyph((const char) c);
-
-            if (c == '\n') {
-                local_cursor_x = 0;
-                local_cursor_y++;
-            } else if (c == '\r') {
-                local_cursor_x = 0;
-            } else {       
-                draw_character(character, &VBE, local_cursor_x * 8 * text_scale, local_cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
-
-                local_cursor_x++;
-
-                if (cursor_x >= max_width) {
-                    local_cursor_x = 0;
-                    local_cursor_y++;
-                }
-            }
-
-            if (local_cursor_y >= max_height) {
-                local_cursor_x = 0;
-                local_cursor_y = max_height - 1;
-            }
-        }
-    }
+    
 }
 
 void new_line() {
