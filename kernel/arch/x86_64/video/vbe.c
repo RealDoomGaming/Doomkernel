@@ -70,14 +70,20 @@ void hide_cursor() {
     cursor_shown = 0;
 }
 
+void inc_head() {
+    // in this function if the head ocunter isnt as as big as the amount of lines max then increase it
+    if (head < BUF_ROWS - 1) {
+        head++;
+    }
+}
+
 void store_character(char c) {
     characters[head][cursor_x] = c;
 
-    if (c != '\n') {
+    if (c == '\n') {
         // go to the next line if the character is a new line
-        if (head < BUF_ROWS) {
-            head++;
-        }
+        inc_head();
+
         // and fill this line with only spaces
         for (uint64_t i = 0; i < BUF_COLS; i++) {
             characters[head][i] = ' ';
@@ -105,6 +111,7 @@ void vbe_write(char c) {
 
         if (cursor_x >= max_width) {
             cursor_x = 0;
+            inc_head();
             cursor_y++;
         }
     }
@@ -182,5 +189,6 @@ char wait_for_key() {
     }
 
     hide_cursor();
+    blink_start = ticks;
     return keyboard_get_key();
 }
