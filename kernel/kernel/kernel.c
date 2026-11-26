@@ -104,8 +104,10 @@ void wait_for_esc() {
     do {
         // we get a input key
         typed = wait_for_key();
+
         // and we directly print it to the terminal
         vbe_write(typed);
+
     } while (typed != 27); // 27 stands for the escape key
 }
 

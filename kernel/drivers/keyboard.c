@@ -4,6 +4,7 @@
 #include <keyboard/keyboard.h>
 #include <io/ports.h>
 #include <interrupts/pic.h>
+#include <video/vbe.h>
 #include "scancodes.h"
 
 // here we define a buffer for the keycache
@@ -44,6 +45,19 @@ void keyboard_handler(interrupt_frame_t *__frame) {
   if (scancode == 0xE0) {
     // and we also set kbd
     kbd_extended = 1;
+    return;
+  }
+
+  // void scroll(uint8_t up_down)
+  // if arrow key down was pressed we scroll down
+  if (scancode == 0x50) {
+    scroll(0);
+    return;
+  }
+
+  // if arrow key up was pressed we scroll up
+  if (scancode == 0x48) {
+    scroll(1);
     return;
   }
 
@@ -118,6 +132,7 @@ char keyboard_get_key() {
   while (kbd_head == kbd_tail) {
     __asm__ volatile ("hlt");
   }
+
 
   // we get our character form the buffer
   char character = (char)keycache[kbd_tail];

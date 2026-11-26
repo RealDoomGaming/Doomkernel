@@ -16,6 +16,8 @@ vbe_mode_info_t VBE;
 
 // we define an array which saves all of the stuff printed so we can build in scroll later
 static char characters[BUF_ROWS][BUF_COLS];
+// a variable which tells at which line in the buffer we currently are
+static uint64_t current_line;
 // a variable which defines which line we are at in our buffer
 static uint64_t head;
 // a variable which defines what line gets shown last on top of the screen
@@ -133,6 +135,7 @@ void new_line() {
     // in this function if the head ocunter isnt as as big as the amount of lines max then increase it
     if (head < BUF_ROWS - 1) {
         head++;
+        current_line++;
     } else {
         shift_up();
         clear_row(head);
@@ -141,6 +144,23 @@ void new_line() {
 
 void store_character(char c) {
     characters[head][cursor_x] = c;
+}
+
+void scroll(uint8_t up_down) {
+    // if up_down is 1 then we want to scroll up else if its 0 we want to scroll down
+    if (up_down == 1) {
+        if (tail > 0) {
+            tail--;
+            head--;
+        }
+    } else if (up_down == 0){
+        if (head <= current_line) {
+            tail++;
+            head++;
+        }
+    }
+
+    redraw_screen();
 }
 
 void vbe_write(char c) {   
