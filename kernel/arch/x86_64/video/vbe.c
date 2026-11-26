@@ -167,9 +167,7 @@ void vbe_write(char c) {
     if (cursor_y >= max_height) {
         cursor_x = 0;
         cursor_y = max_height - 1;
-        if (cursor_x > BUF_ROWS) {
-            redraw_screen();
-        }
+        redraw_screen();
     }
 }
 
