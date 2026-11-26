@@ -77,6 +77,14 @@ void inc_head() {
     }
 }
 
+void shift_up() {
+    for (uint64_t i == 0; i < head; i++) {
+        // in this loop we copy the next row into this row 
+        // memcpy(void* destptr, const void* srcptr, size_t size)
+        memcpy(characters[i], characters[i+1], sizeof(char) * 64);
+    }
+}
+
 void store_character(char c) {
     characters[head][cursor_x] = c;
 
