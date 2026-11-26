@@ -97,9 +97,34 @@ void shift_up() {
 }
 
 void redraw_screen() {
+    uint64_t line = 0;
+    uint64_t screen_row = 0;
+    uint64_t y = 0;
+    uint64_t x = 0;
+    char c;
     V = max_height - tail;
 
-    
+    uint64_t row = 0;
+    uint64_t col = 0;
+    // either we stop when we looped over all lines or when we are out of lines
+    while (row < V && row <= head) {
+        line = head - row;
+        screen_row = tail + (V - 1 - row);
+        y = screen_row * (8 * text_scale + line_gap);
+        x = col * 8 * text_scale;
+
+        while (col < max_width) {
+            c = characters[line][col];
+            const glyph *character = get_glyph(c);
+
+            draw_character(character, &VBE, x, y, font_color, background_color, text_scale);
+
+            col++;
+        }
+
+        row++;
+    }
+
 }
 
 void new_line() {
