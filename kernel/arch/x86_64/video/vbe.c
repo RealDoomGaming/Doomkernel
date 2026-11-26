@@ -37,6 +37,7 @@ static uint8_t cursor_shown;
 static uint64_t blink_start;
 
 void reset_buffer();
+void new_line();
 
 const vbe_mode_info_t* load_vbe(const uint64_t vbe_addr) {
     vbe_mode_info_t *vbe = (vbe_mode_info_t*)vbe_addr;
@@ -89,10 +90,47 @@ void shift_up() {
     }
 }
 
+void re_render() {
+    uint32_t local_cursor_x = 0;
+    uint32_t local_cursor_y = 0;
+
+    for (uint64_t i = head-BUF_COLS; i < head; i++) {
+        for (uint64_t j = 0; j < BUF_ROWS; i++) {
+            char c = characters[i][j];
+            const glyph *character = get_glyph((const char) c);
+
+            if (c == '\n') {
+                new_line();
+                local_cursor_x = 0;
+                local_cursor_y++;
+            } else if (c == '\r') {
+                local_cursor_x = 0;
+            } else {       
+                draw_character(character, &VBE, local_cursor_x * 8 * text_scale, local_cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
+
+                local_cursor_x++;
+
+                if (cursor_x >= max_width) {
+                    local_cursor_x = 0;
+                    local_cursor_y++;
+                }
+            }
+
+            if (local_cursor_y >= max_height) {
+                local_cursor_x = 0;
+                local_cursor_y = max_height - 1;
+            }
+        }
+    }
+}
+
 void new_line() {
     // in this function if the head ocunter isnt as as big as the amount of lines max then increase it
     if (head < BUF_ROWS - 1) {
         head++;
+        if (head > BUF_COLS) {
+            re_render();
+        }
     } else {
         shift_up();
         clear_row(head);
