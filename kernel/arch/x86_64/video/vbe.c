@@ -111,17 +111,19 @@ void redraw_screen() {
         line = head - row;
         screen_row = tail + (V - 1 - row);
         y = screen_row * (8 * text_scale + line_gap);
-        x = col * 8 * text_scale;
 
         while (col < max_width) {
             c = characters[line][col];
             const glyph *character = get_glyph(c);
+
+            x = col * 8 * text_scale;
 
             draw_character(character, &VBE, x, y, font_color, background_color, text_scale);
 
             col++;
         }
 
+        col = 0;
         row++;
     }
 
