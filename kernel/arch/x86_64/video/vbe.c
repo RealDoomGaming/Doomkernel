@@ -90,17 +90,16 @@ void shift_up() {
     }
 }
 
-void re_render() {
+void redraw_screen() {
     uint32_t local_cursor_x = 0;
     uint32_t local_cursor_y = 0;
 
-    for (uint64_t i = head-BUF_COLS; i < head; i++) {
-        for (uint64_t j = 0; j < BUF_ROWS; i++) {
+    for (uint64_t i = head-BUF_ROWS; i < head; i++) {
+        for (uint64_t j = 0; j < BUF_COLS; j++) {
             char c = characters[i][j];
             const glyph *character = get_glyph((const char) c);
 
             if (c == '\n') {
-                new_line();
                 local_cursor_x = 0;
                 local_cursor_y++;
             } else if (c == '\r') {
@@ -128,9 +127,6 @@ void new_line() {
     // in this function if the head ocunter isnt as as big as the amount of lines max then increase it
     if (head < BUF_ROWS - 1) {
         head++;
-        if (head > BUF_COLS) {
-            re_render();
-        }
     } else {
         shift_up();
         clear_row(head);
@@ -167,6 +163,9 @@ void vbe_write(char c) {
     if (cursor_y >= max_height) {
         cursor_x = 0;
         cursor_y = max_height - 1;
+        if (cursor_x > BUF_ROWS) {
+            redraw_screen();
+        }
     }
 }
 
