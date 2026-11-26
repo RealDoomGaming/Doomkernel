@@ -3,6 +3,7 @@
 #include <keyboard/keyboard.h>
 #include <timer/pit.h>
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -70,18 +71,20 @@ void hide_cursor() {
     cursor_shown = 0;
 }
 
+void shift_up() {
+    for (uint64_t i = 0; i < head; i++) {
+        // in this loop we copy the next row into this row 
+        // memcpy(void* destptr, const void* srcptr, size_t size)
+        memcpy(characters[i], characters[i+1], sizeof(char) * 64);
+    }
+}
+
 void inc_head() {
     // in this function if the head ocunter isnt as as big as the amount of lines max then increase it
     if (head < BUF_ROWS - 1) {
         head++;
-    }
-}
-
-void shift_up() {
-    for (uint64_t i == 0; i < head; i++) {
-        // in this loop we copy the next row into this row 
-        // memcpy(void* destptr, const void* srcptr, size_t size)
-        memcpy(characters[i], characters[i+1], sizeof(char) * 64);
+    } else {
+        shift_up();
     }
 }
 
@@ -106,6 +109,8 @@ void vbe_write(char c) {
     const glyph *character = get_glyph((const char) c);
     hide_cursor();
 
+    store_character(c);
+
     if (c == '\n') {
         cursor_x = 0;
         cursor_y++;
@@ -113,7 +118,6 @@ void vbe_write(char c) {
         cursor_x = 0;
     } else {       
         draw_character(character, &VBE, cursor_x * 8 * text_scale, cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
-        store_character(c);
 
         cursor_x++;
 
