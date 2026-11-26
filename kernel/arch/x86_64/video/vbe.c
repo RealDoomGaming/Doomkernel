@@ -66,6 +66,11 @@ void vbe_terminal_init(uint64_t background, uint64_t font, uint32_t gap) {
     max_height = VBE.height / (8 * text_scale + line_gap);
     max_width = VBE.width / (8 * text_scale);
 
+    // we need this so the rows never read past the BUF_COLS
+    if (max_width > BUF_COLS) {
+        max_width = BUF_COLS;
+    }
+
     reset_buffer();
 }
 
@@ -75,11 +80,21 @@ void write_cursor(char c) {
 }
 
 void show_cursor() {
+    // if we are scrolling we cant write
+    if (tail != 0) {
+        return;
+    }
+
     write_cursor('_');
     cursor_shown = 1;
 }
 
 void hide_cursor() {
+    // if we are scrolling we cant write
+    if (tail != 0) {
+        return;
+    }
+
     write_cursor(' ');
     cursor_shown = 0;
 }
@@ -104,18 +119,26 @@ void redraw_screen() {
     uint64_t y = 0;
     uint64_t x = 0;
     char c;
-    V = max_height - tail;
+    // V is now the line which is last shown on the last row of the screen
+    V = head - tail;
 
     uint64_t row = 0;
     uint64_t col = 0;
-    // either we stop when we looped over all lines or when we are out of lines
-    while (row < V && row <= head) {
+    // we start from the bottom and go over every row which we want to render
+    while (row < max_height) {
         line = head - row;
-        screen_row = tail + (V - 1 - row);
+        screen_row = max_height - 1 - row;
         y = screen_row * (8 * text_scale + line_gap);
 
         while (col < max_width) {
-            c = characters[line][col];
+            c = ' ';
+
+            // we only read from the buffer if there is still something to read
+            if (row <= V) {
+                line = V - row;
+                c = characters[line][col];
+            }
+
             const glyph *character = get_glyph(c);
 
             x = col * 8 * text_scale;
@@ -149,14 +172,18 @@ void store_character(char c) {
 void scroll(uint8_t up_down) {
     // if up_down is 1 then we want to scroll up else if its 0 we want to scroll down
     if (up_down == 1) {
-        if (tail > 0) {
-            tail--;
-            head--;
+        // we can only scroll if there is still a line above to scroll to
+        if (head - tail > max_height - 1) {
+            tail++;
+        } else {
+            return;
         }
     } else if (up_down == 0){
-        if (head <= current_line) {
-            tail++;
-            head++;
+        // same here
+        if (tail > 0) {
+            tail--;
+        } else {
+            return;
         }
     }
 
@@ -221,7 +248,8 @@ void write_logo(char *c) {
 
     // since we only render the logo when we boot into the kernel we can reset the y and x here
     cursor_x = 0;
-    cursor_y = text_size/2;    
+    cursor_y = text_size/2;   
+    head = cursor_y; 
 }
 
 void reset_buffer() {
@@ -229,6 +257,7 @@ void reset_buffer() {
         clear_row(line);
     }
     head = 0;
+    tail = 0;
 }
 
 void clear() {
