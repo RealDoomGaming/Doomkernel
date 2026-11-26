@@ -105,7 +105,7 @@ void vbe_write(char c) {
         cursor_x = 0;
     } else {       
         draw_character(character, &VBE, cursor_x * 8 * text_scale, cursor_y * (8  * text_scale + line_gap), font_color, background_color, text_scale);
-        // store_character(c);
+        store_character(c);
 
         cursor_x++;
 
